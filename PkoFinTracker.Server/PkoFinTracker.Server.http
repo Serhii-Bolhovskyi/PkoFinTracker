@@ -1,6 +1,6 @@
 @PkoFinTracker.Server_HostAddress = http://localhost:5093
 
-GET {{PkoFinTracker.Server_HostAddress}}/weatherforecast/
+GET {{PkoFinTracker.Server_HostAddress}}/api/Bank
 Accept: application/json
 
 ###
