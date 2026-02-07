@@ -11,7 +11,7 @@ public class AuthRequestDto
     public AspspDto Aspsp { get; set; }
     
     [JsonPropertyName("state")]
-    public Guid State { get; set; }
+    public string State { get; set; }
     
     [JsonPropertyName(("redirect_url"))]
     public string RedirectUrl { get; set; }
@@ -23,7 +23,7 @@ public class AuthRequestDto
 public class AccessDto
 {
     [JsonPropertyName("valid_until")]
-    public DateTime ValidUntil { get; set; }
+    public string ValidUntil { get; set; }
 }
 
 public class AspspDto

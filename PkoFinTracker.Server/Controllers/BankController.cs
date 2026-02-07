@@ -23,9 +23,9 @@ public class BankController : ControllerBase
     }
 
     [HttpPost("auth")]
-    public async Task<IActionResult> Authenticate()
+    public async Task<IActionResult> Authenticate([FromBody] AuthRequestDto? request = null)
     {
-        var res = await _enableBankingService.AuthenticateAsync();
+        var res = await _enableBankingService.AuthenticateAsync(request);
         return Ok(res);
     }
 

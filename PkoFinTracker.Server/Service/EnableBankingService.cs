@@ -7,63 +7,93 @@ public class EnableBankingService
 {
     private readonly HttpClient _httpClient;
     private readonly EnableBankingAuthService _enableBankingAuthService;
+    private readonly IConfiguration _conf;
 
-    public EnableBankingService(HttpClient httpClient, EnableBankingAuthService enableBankingAuthService)
+    public EnableBankingService(HttpClient httpClient, EnableBankingAuthService enableBankingAuthService,  IConfiguration conf)
     {
         _httpClient = httpClient;
         _enableBankingAuthService = enableBankingAuthService; 
+        _conf = conf;
+    }
+
+    private async Task<HttpRequestMessage> CreateRequestAsync(HttpMethod method, string url)
+    {
+        var token = _enableBankingAuthService.GenerateJwtToken();
+        var request = new HttpRequestMessage(method, url);
+        
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        return request;
     }
 
     public async Task<string> GetProvidersAsync()
     {
-        var token = _enableBankingAuthService.GenerateJwtToken();
+        var url = "https://api.enablebanking.com/aspsps?country=PL";
         
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        using var request = await CreateRequestAsync(HttpMethod.Get, url);
 
-        var response = await _httpClient.GetAsync("https://api.enablebanking.com/aspsps?country=PL");
-        response.EnsureSuccessStatusCode();
+        using var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error =  await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"APIs error ({response.StatusCode}): {error}");
+        }
         
         return await response.Content.ReadAsStringAsync();
     }
 
-    public async Task<AuthResponseDto> AuthenticateAsync()
+    public async Task<AuthResponseDto?> AuthenticateAsync(AuthRequestDto? requestBody = null)
     {
-        var token = _enableBankingAuthService.GenerateJwtToken();
-        
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        var url = "https://api.enablebanking.com/auth";
-        
-        var requestBody = new AuthRequestDto()
+        if (requestBody == null)
         {
-            Access = new AccessDto()
+            requestBody = new AuthRequestDto()
             {
-                ValidUntil = DateTime.UtcNow.AddMinutes(30)
-            },
-            Aspsp = new AspspDto()
-            {
-                Name = "Mock ASPSP",
-                Country = "PL"
-            },
-            State = new Guid(),
-            RedirectUrl = "http://localhost:5173/",
-            PsuType = "personal"
-        };
+                Access = new AccessDto()
+                {
+                    ValidUntil = DateTime.UtcNow.AddDays(_conf.GetValue<int>("EnableBanking:ConsentDays", 30)).ToString("yyyy-MM-ddTHH:mm:ssZ")
+                },
+                Aspsp = new AspspDto()
+                {
+                    Name = _conf.GetValue<string>("EnableBanking:DefaultAspspName"),
+                    Country = _conf.GetValue<string>("EnableBanking:DefaultCountry"),
+                },
+                State = Guid.NewGuid().ToString(),
+                RedirectUrl = _conf.GetValue<string>("EnableBanking:DefaultRedirectUrl"),
+                PsuType = "personal"
+            };
+        }
+        
+        using var request = await CreateRequestAsync(HttpMethod.Post, "https://api.enablebanking.com/auth");
 
-        var response = await _httpClient.PostAsJsonAsync(url, requestBody);
-        response.EnsureSuccessStatusCode();
+        request.Content = JsonContent.Create(requestBody);
+        
+        using var response = await _httpClient.SendAsync(request);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"APIs auth error ({response.StatusCode}): {error}");
+        }
+        
+        Console.WriteLine($"DEBUG: Bank Name from config: {requestBody.Aspsp.Name}");
         return await response.Content.ReadFromJsonAsync<AuthResponseDto>();
     }
 
-    public async Task<SessionResponseDto> CreateSessionAsync(SessionRequestDto request)
+    public async Task<SessionResponseDto> CreateSessionAsync(SessionRequestDto requestBody)
     {
-        var token = _enableBankingAuthService.GenerateJwtToken();
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        var url = "https://api.enablebanking.com/sessions";
+        using var request = await CreateRequestAsync(HttpMethod.Post, "https://api.enablebanking.com/sessions");
         
-        var response = await _httpClient.PostAsJsonAsync(url, request);
-        response.EnsureSuccessStatusCode();
+        request.Content = JsonContent.Create(requestBody);
+        
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"APIs session error ({response.StatusCode}): {error}");
+        }
+        
         return await response.Content.ReadFromJsonAsync<SessionResponseDto>();
     }
 }
