@@ -1,6 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using PkoFinTracker.Server.Data;
 using PkoFinTracker.Server.Service;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<TransactionContext>(opt => opt.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<EnableBankingAuthService>();
 builder.Services.AddHttpClient<EnableBankingService>();
