@@ -16,12 +16,13 @@ public class EnableBankingService
         _conf = conf;
     }
 
-    private async Task<HttpRequestMessage> CreateRequestAsync(HttpMethod method, string url)
+    private async Task<HttpRequestMessage> CreateRequestAsync(HttpMethod method, string url, string? sessionId = null)
     {
         var token = _enableBankingAuthService.GenerateJwtToken();
         var request = new HttpRequestMessage(method, url);
         
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Headers.Add("X-Session-Id", sessionId);
 
         return request;
     }
@@ -80,7 +81,7 @@ public class EnableBankingService
         return await response.Content.ReadFromJsonAsync<AuthResponseDto>();
     }
 
-    public async Task<SessionResponseDto> CreateSessionAsync(SessionRequestDto requestBody)
+    public async Task<SessionResponseDto?> CreateSessionAsync(SessionRequestDto requestBody)
     {
         using var request = await CreateRequestAsync(HttpMethod.Post, "https://api.enablebanking.com/sessions");
         
@@ -95,5 +96,21 @@ public class EnableBankingService
         }
         
         return await response.Content.ReadFromJsonAsync<SessionResponseDto>();
+    }
+
+    public async Task<TransactionsResponseDto?> GetTransactionsAsync(string accountId, string sessionId)
+    {
+        using var request = await CreateRequestAsync(HttpMethod.Get,
+            $"https://api.enablebanking.com/accounts/{accountId}/transactions?date_from=2024-01-01", sessionId);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"APIs GetTransaction error ({response.StatusCode}): {error}");
+        }
+        
+        return await response.Content.ReadFromJsonAsync<TransactionsResponseDto>();
     }
 }

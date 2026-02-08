@@ -22,6 +22,14 @@ public class BankController : ControllerBase
         return Ok(res);
     }
 
+    [HttpGet("accounts/{account_id}/transactions")]
+    public async Task<IActionResult> GetTransactions(string account_id, [FromQuery] string sessionId)
+    {
+        var res = await _enableBankingService.GetTransactionsAsync(account_id, sessionId);
+        return Ok(res);
+    }
+    
+
     [HttpPost("auth")]
     public async Task<IActionResult> Authenticate([FromBody] AuthRequestDto? request = null)
     {
