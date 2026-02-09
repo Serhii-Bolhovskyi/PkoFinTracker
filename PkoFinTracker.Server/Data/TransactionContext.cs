@@ -19,6 +19,11 @@ public class TransactionContext : DbContext
         transaction.Property(t => t.Amount).HasPrecision(18, 2);
         transaction.HasIndex(t => t.ExternalId).IsUnique();
         
-        modelBuilder.Entity<Category>().Property(t => t.Name).IsRequired();
+        var category = modelBuilder.Entity<Category>();
+        
+        category.Property(c => c.Name).IsRequired();
+        category.HasIndex(c => c.Name).IsUnique();
+
+        category.HasData(Category.Categories);
     }
 }
