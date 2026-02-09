@@ -9,10 +9,12 @@ namespace PkoFinTracker.Server.Controllers;
 public class BankController : ControllerBase
 {
     private readonly EnableBankingService _enableBankingService;
+    private readonly TransactionService _transactionService;
 
-    public BankController(EnableBankingService enableBankingService)
+    public BankController(EnableBankingService enableBankingService, TransactionService transactionService)
     {
         _enableBankingService = enableBankingService;
+        _transactionService = transactionService;
     }
     
     [HttpGet]
@@ -26,6 +28,12 @@ public class BankController : ControllerBase
     public async Task<IActionResult> GetTransactions(string account_id, [FromQuery] string sessionId)
     {
         var res = await _enableBankingService.GetTransactionsAsync(account_id, sessionId);
+
+        if (res?.Transactions != null && res.Transactions.Any())
+        {
+            await _transactionService.SyncTransactionsAsync(res.Transactions, account_id);
+        }
+        
         return Ok(res);
     }
     

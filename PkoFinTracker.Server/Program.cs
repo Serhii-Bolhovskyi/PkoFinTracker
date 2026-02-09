@@ -9,6 +9,7 @@ builder.Services.AddDbContext<TransactionContext>(opt => opt.UseNpgsql(connectio
 
 builder.Services.AddScoped<EnableBankingAuthService>();
 builder.Services.AddHttpClient<EnableBankingService>();
+builder.Services.AddScoped<TransactionService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
