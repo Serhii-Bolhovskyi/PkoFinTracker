@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+    --font-sans: 'Inter var', sans-serif;
+    
+    --color-bank-panel: hsl(251, 30%, 7%);
+    --color-bank-main: hsl(252, 26%, 4%);
+    --color-bank-comp: hsl(249, 25%, 10%);
+    --color-bank-purple: hsl(269, 59%, 47%);
+}
+
+@layer base {
+    table {
+        @apply text-left border-collapse;
+    }
+    th{
+        @apply text-left py-4 px-6 text-gray-400 font-medium text-base;
+    }
+    thead {
+        @apply border-b border-b-gray-800;
+    }
+    tbody{
+        @apply divide-y divide-gray-800;
+    }
+    td{
+        @apply py-4 px-6 text-gray-300 text-base;
+    }
+}
