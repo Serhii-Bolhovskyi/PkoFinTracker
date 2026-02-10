@@ -48,7 +48,18 @@ public class BankController : ControllerBase
     [HttpPost("sessions")]
     public async Task<IActionResult> CreateSession([FromBody] SessionRequestDto request)
     {
-        var res = await _enableBankingService.CreateSessionAsync(request);
-        return Ok(res);
+        var session = await _enableBankingService.CreateSessionAsync(request);
+
+        foreach (var account in session.Accounts)
+        {
+            var res = await _enableBankingService.GetTransactionsAsync(account.Uid,
+                session.SessionId);
+            if (res?.Transactions != null)
+            {
+                await _transactionService.SyncTransactionsAsync(res.Transactions, account.Uid);
+            }
+        }
+        
+        return Ok();
     }
 }
