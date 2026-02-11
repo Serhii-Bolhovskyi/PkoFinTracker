@@ -11,7 +11,7 @@ export const Callback = () => {
         if(code){
             axios.post('http://localhost:5093/api/Bank/sessions', {code})
                 .then(() => {
-                    navigate('/')
+                    navigate('/dashboard')
                 });   
         }
     }, [code])

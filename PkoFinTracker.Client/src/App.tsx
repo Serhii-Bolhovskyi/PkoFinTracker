@@ -1,15 +1,24 @@
-import {Route, Routes} from "react-router-dom";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {Callback} from "./pages/Callback.tsx";
-import {Home} from "./pages/Home.tsx";
+import {Dashboard} from "./pages/Dashboard.tsx";
+import Layout from "./components/Layout.tsx";
 
 
 function App() {
-    
     return (
-        <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/callback" element={<Callback/>} />
-        </Routes>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/callback" element={<Callback />} />
+                
+                <Route path="/*" element={
+                    <Layout>
+                        <Routes>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                        </Routes>
+                    </Layout>
+                } />
+            </Routes>
+        </BrowserRouter>
     )
 }
 

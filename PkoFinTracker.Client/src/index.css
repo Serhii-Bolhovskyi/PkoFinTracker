@@ -19,7 +19,7 @@
         @apply text-left py-4 px-6 text-gray-400 font-medium text-base;
     }
     thead {
-        @apply border-b border-b-gray-800;
+        @apply bg-bank-panel sticky z-10 top-0 border-b border-b-gray-800 ;
     }
     tbody{
         @apply divide-y divide-gray-800;
