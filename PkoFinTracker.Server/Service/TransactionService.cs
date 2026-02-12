@@ -35,8 +35,11 @@ public class TransactionService
         };
     }
 
-    public async Task SyncTransactionsAsync(List<TransactionsDto> transactionsDto, string accountId)
+    public async Task SyncTransactionsAsync(List<TransactionsDto> transactionsDto, string bankUid)
     {
+        var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.BankUid == bankUid);
+        if (account == null)
+            throw new Exception("Account not found");
         foreach (var dto in transactionsDto)
         {
             var targetId = dto.TransactionId ?? dto.EntryReference;
@@ -47,7 +50,7 @@ public class TransactionService
                 {
                     Id = Guid.NewGuid(),
                     ExternalId = targetId,
-                    AccountId = accountId,
+                    BankAccountId = account.Id,
                     Indicator = dto.CreditDebitIndicator,
                     Currency = dto.TransactionAmount.Currency,
                     Amount = dto.TransactionAmount.Amount,

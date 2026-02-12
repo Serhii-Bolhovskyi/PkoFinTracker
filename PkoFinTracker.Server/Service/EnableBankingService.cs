@@ -97,6 +97,36 @@ public class EnableBankingService
         
         return await response.Content.ReadFromJsonAsync<SessionResponseDto>();
     }
+    
+    public async Task<AccountDetailsResponseDto?> GetAccountDetailsAsync(string accountId, string sessionId)
+    {
+        using var request = await CreateRequestAsync(HttpMethod.Get,
+            $"https://api.enablebanking.com/accounts/{accountId}/details", sessionId);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"APIs AccountDetails error ({response.StatusCode}): {error}");
+        }
+        return await response.Content.ReadFromJsonAsync<AccountDetailsResponseDto>();
+    }
+    
+    public async Task<BalancesResponseDto?> GetBalancesAsync(string accountId, string sessionId)
+    {
+        using var request = await CreateRequestAsync(HttpMethod.Get,
+            $"https://api.enablebanking.com/accounts/{accountId}/balances", sessionId);
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"APIs GetBalances error ({response.StatusCode}): {error}");
+        }
+        return await response.Content.ReadFromJsonAsync<BalancesResponseDto>();
+    }
 
     public async Task<TransactionsResponseDto?> GetTransactionsAsync(string accountId, string sessionId)
     {
@@ -113,4 +143,5 @@ public class EnableBankingService
         
         return await response.Content.ReadFromJsonAsync<TransactionsResponseDto>();
     }
+    
 }

@@ -3,9 +3,9 @@ using PkoFinTracker.Server.Models;
 
 namespace PkoFinTracker.Server.Data;
 
-public class ApplicationContext : DbContext
+public class TransactionContext : DbContext
 {
-    public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options){}
+    public TransactionContext(DbContextOptions<TransactionContext> options) : base(options){}
     
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Category> Categories { get; set; }

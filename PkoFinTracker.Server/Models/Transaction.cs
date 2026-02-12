@@ -2,9 +2,9 @@ namespace PkoFinTracker.Server.Models;
 
 public class Transaction
 {
-    public Guid Id { get; set; }
-    public string ExternalId { get; set; }
-    public string AccountId { get; set; }
+    public Guid Id { get; set; } // our id
+    public string ExternalId { get; set; } // transaction's id from api
+    public Guid BankAccountId { get; set; } // our id from BankAccount
     public string Indicator { get; set; }
     public string Currency { get; set; }
     public decimal Amount { get; set; }
@@ -15,4 +15,6 @@ public class Transaction
     
     public int? CategoryId { get; set; }
     public Category? Category { get; set; }
+    
+    public BankAccount? BankAccount { get; set; }
 }
