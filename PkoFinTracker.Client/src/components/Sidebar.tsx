@@ -19,7 +19,6 @@ const Sidebar: React.FC = () => {
     ]
     return (
         <aside className="w-64 h-screen bg-bank-panel border-r border-gray-800 flex flex-col">
-            {/* Logo */}
             <div className="p-6 flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold text-xl">FT</span>

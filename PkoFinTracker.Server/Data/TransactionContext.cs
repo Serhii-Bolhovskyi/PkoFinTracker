@@ -3,12 +3,13 @@ using PkoFinTracker.Server.Models;
 
 namespace PkoFinTracker.Server.Data;
 
-public class TransactionContext : DbContext
+public class ApplicationContext : DbContext
 {
-    public TransactionContext(DbContextOptions<TransactionContext> options) : base(options){}
+    public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options){}
     
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<BankAccount> BankAccounts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,5 +26,10 @@ public class TransactionContext : DbContext
         category.HasIndex(c => c.Name).IsUnique();
 
         category.HasData(Category.Categories);
+        
+        var bankAccount = modelBuilder.Entity<BankAccount>();
+        
+        bankAccount.Property(b => b.Balance).HasPrecision(18, 2);
+        bankAccount.HasIndex(b => b.Iban).IsUnique();
     }
 }
