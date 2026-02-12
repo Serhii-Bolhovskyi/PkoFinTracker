@@ -31,7 +31,7 @@ const TransactionTable:React.FC<TransactionTableProps> = ({transactions}) => {
                             }`}
                         >
                             <td>
-                                # {t.id.substring(0, 8)}...
+                                #{t.id.substring(0, 8)}...
                             </td>
                             <td className="">
                                 <div className="flex items-center gap-3">
