@@ -40,4 +40,19 @@ public class AccountService
         }
         await _context.SaveChangesAsync();
     }
+
+    public async Task<List<AccountDisplayDto>> GetAllAccountsAsync()
+    {
+        var accounts = await _context.BankAccounts
+            .Select(a => new AccountDisplayDto
+            {
+                Id = a.Id,
+                Iban = a.Iban,
+                Name = a.Name,
+                Currency = a.Currency,
+                Balance = a.Balance,
+            }).ToListAsync();
+        
+        return accounts;
+    }
 }

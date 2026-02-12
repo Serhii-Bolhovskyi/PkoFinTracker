@@ -13,7 +13,7 @@ public class TransactionController : ControllerBase
         _transactionService = transactionService;
     }
 
-    [HttpGet("transactions")]
+    [HttpGet]
     public async Task<IActionResult> GetTransactions()
     {
         var res = await _transactionService.GetAllTransactionAsync();
