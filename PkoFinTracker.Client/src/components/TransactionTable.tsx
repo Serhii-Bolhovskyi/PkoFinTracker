@@ -1,13 +1,13 @@
 import * as React from "react";
 import type {Transaction} from "../types/Transaction.ts";
 
-interface TransactionTableProps {
+export interface TransactionProps {
     transactions: Transaction[];
 }
-const TransactionTable:React.FC<TransactionTableProps> = ({transactions}) => {
+const TransactionTable:React.FC<TransactionProps> = ({transactions}) => {
     return(
-        <div className="max-w-5xl overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800">
+        <div className="col-span-8 row-span-2 col-start-1 overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
                 <h1 className="text-xl font-normal">Recent Transaction</h1>
             </div>
 
@@ -19,7 +19,7 @@ const TransactionTable:React.FC<TransactionTableProps> = ({transactions}) => {
                         <th>Transaction</th>
                         <th>Category</th>
                         <th>Date Time</th>
-                        <th>Cost</th>
+                        <th className="pr-0">Cost</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -30,7 +30,7 @@ const TransactionTable:React.FC<TransactionTableProps> = ({transactions}) => {
                                 index !== transactions.length - 1 ? 'border-b border-gray-800' : ''
                             }`}
                         >
-                            <td>
+                            <td className="pl-5">
                                 #{t.id.substring(0, 8)}...
                             </td>
                             <td className="">
@@ -43,7 +43,7 @@ const TransactionTable:React.FC<TransactionTableProps> = ({transactions}) => {
                                     >
                                         {t.description?.charAt(0).toUpperCase() || 'T'}
                                     </div>
-                                    <span className="truncate max-w-56">
+                                    <span className="max-w-40 truncate">
                                         {t.description}
                                         </span>
                                 </div>
@@ -60,7 +60,7 @@ const TransactionTable:React.FC<TransactionTableProps> = ({transactions}) => {
                                     minute: '2-digit'
                                 })}
                             </td>
-                            <td className={`whitespace-nowrap ${t.indicator === "DBIT" ? 'text-red-600' : 'text-emerald-600'} `}>
+                            <td className={`whitespace-nowrap ${t.indicator === "DBIT" ? 'text-red-600' : 'text-emerald-600'} pr-2`}>
                                 {t.indicator === 'DBIT' ? '-' : '+'}{t.amount} {t.currency}
                             </td>
                         </tr>

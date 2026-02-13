@@ -16,7 +16,7 @@
         @apply text-left border-collapse;
     }
     th{
-        @apply text-left py-4 px-6 text-gray-400 font-medium text-base;
+        @apply text-left py-4 px-5 text-gray-400 font-medium text-base;
     }
     thead {
         @apply bg-bank-panel sticky z-10 top-0 border-b border-b-gray-800 ;
@@ -25,6 +25,6 @@
         @apply divide-y divide-gray-800;
     }
     td{
-        @apply py-4 px-6 text-gray-300 text-base;
+        @apply py-4 px-1  text-gray-300 text-base;
     }
 }
