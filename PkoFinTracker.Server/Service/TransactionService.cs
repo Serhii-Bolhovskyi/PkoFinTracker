@@ -40,6 +40,7 @@ public class TransactionService
         var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.BankUid == bankUid);
         if (account == null)
             throw new Exception("Account not found");
+        Console.WriteLine($"balance before: {account.Balance}");
         foreach (var dto in transactionsDto)
         {
             var targetId = dto.TransactionId ?? dto.EntryReference;
@@ -57,20 +58,38 @@ public class TransactionService
                     Description = string.Join(", ", dto.RemittanceInformation),
                     Status = dto.Status,
                     Mcc = dto.MerchantCategoryCode,
-                    BookingDate = DateTime.SpecifyKind(dto.BookingDate,  DateTimeKind.Utc),
+                    BookingDate = DateTime.SpecifyKind(dto.BookingDate, DateTimeKind.Utc),
 
-                    CategoryId = GetCategoryId(dto.MerchantCategoryCode),
+                    CategoryId = GetCategoryId(dto.MerchantCategoryCode), 
                 };
                 await _context.Transactions.AddAsync(transaction);
+
+                if (dto.CreditDebitIndicator == "CRDT")
+                {
+                    account.Balance += dto.TransactionAmount.Amount;
+                }
+                else if (dto.CreditDebitIndicator == "DBIT")
+                {
+                    account.Balance -= Math.Abs(dto.TransactionAmount.Amount);
+                }
             }
         }
+        Console.WriteLine($"balance after: {account.Balance}");
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<TransactionDisplayDto>> GetAllTransactionAsync()
+    public async Task<List<TransactionDisplayDto>> GetAllTransactionAsync(int? limit =  null)
     {
-        var transactions = await _context.Transactions
+        var query = _context.Transactions
             .OrderByDescending(t => t.BookingDate)
+            .AsQueryable();
+
+        if (limit.HasValue)
+        {
+            query = query.Take(limit.Value);
+        }
+        
+        return await query
             .Select(t => new TransactionDisplayDto
             {
                 Id = t.Id,
@@ -81,7 +100,5 @@ public class TransactionService
                 CategoryName = t.Category != null ? t.Category.Name : "Other",
                 Indicator = t.Indicator,
             }).ToListAsync();
-
-        return transactions;
     }
 }

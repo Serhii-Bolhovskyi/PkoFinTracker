@@ -14,9 +14,9 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTransactions()
+    public async Task<IActionResult> GetTransactions([FromQuery] int? limit)
     {
-        var res = await _transactionService.GetAllTransactionAsync();
+        var res = await _transactionService.GetAllTransactionAsync(limit);
         return Ok(res);
     }
 }

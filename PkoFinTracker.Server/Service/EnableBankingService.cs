@@ -131,7 +131,7 @@ public class EnableBankingService
     public async Task<TransactionsResponseDto?> GetTransactionsAsync(string accountId, string sessionId)
     {
         using var request = await CreateRequestAsync(HttpMethod.Get,
-            $"https://api.enablebanking.com/accounts/{accountId}/transactions?date_from=2024-01-01", sessionId);
+            $"https://api.enablebanking.com/accounts/{accountId}/transactions?date_from=2026-01-01", sessionId);
 
         var response = await _httpClient.SendAsync(request);
 
