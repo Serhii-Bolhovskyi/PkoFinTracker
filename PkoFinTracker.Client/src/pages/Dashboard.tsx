@@ -12,6 +12,7 @@ import { RechartsDevtools } from '@recharts/devtools';
 
 export const Dashboard: React.FC = () => {
     const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+    const [recentTransactions, setRecentTransactions] = React.useState<Transaction[]>([]);
     const [accounts, setAccounts] = React.useState<BankAccount[]>([]);
 
     const { totalIncome, totalExpense } = useMemo(() => {
@@ -36,6 +37,13 @@ export const Dashboard: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        axios.get('http://localhost:5093/api/Transaction?limit=5')
+            .then(res => {
+                setRecentTransactions(res.data);
+            }).catch(err => console.log(err));
+    }, []);
+
+    useEffect(() => {
         axios.get('http://localhost:5093/api/Account')
             .then(res => setAccounts(res.data))
             .catch(err => console.log(err));
@@ -54,7 +62,7 @@ export const Dashboard: React.FC = () => {
                         <StatCard title="Total Expense" amount={totalExpense} currency={accounts[0].currency} type='expense' />
                     </div>
                 </>}
-                <TransactionTable  transactions={transactions}/>
+                <TransactionTable  transactions={recentTransactions}/>
             </div>
     )
 }
@@ -146,7 +154,7 @@ const SimpleBarChart = ({data}) => {
                 bottom: 5,
             }}
         >
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3"/>
             <XAxis dataKey="name" />
             <YAxis width="auto" />
             <Tooltip />

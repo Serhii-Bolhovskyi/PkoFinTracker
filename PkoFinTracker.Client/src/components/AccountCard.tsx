@@ -15,7 +15,7 @@ const AccountCard: React.FC<AccountCardProps> = ({accounts}) => {
         if (showNumber) {
             return iban.match(/.{1,4}/g)?.join(' ') || iban;
         }
-        return `•• •••• •••• ${iban.slice(-4)}`;
+        return `•••• ${iban.slice(-4)}`;
     };
 
     const formatBalance = (balance: number, currency: string) => {
@@ -39,7 +39,15 @@ const AccountCard: React.FC<AccountCardProps> = ({accounts}) => {
     };
     return (
         <div className="col-span-4 rounded-2xl bg-bank-comp p-5">
-            <h1 className="text-white text-xl mb-3">MyCard</h1>
+            <div className="flex items-center mb-3 space-x-4">
+                <h1 className="text-white text-xl">MyCard</h1>
+                <button
+                    onClick={() => setShowNumber(!showNumber)}
+                    className="p-1.5 hover:bg-white/20 rounded-lg transition"
+                >
+                    {showNumber ? <EyeOff className="w-6 h-6 text-white " /> : <Eye className="w-6 h-6  text-white" />}
+                </button>
+            </div>
             <div className="relative w-full h-52 bg-gradient-to-br from-bank-purple via-bank-purple to-pink-200 rounded-2xl p-5 text-white shadow-xl overflow-hidden">
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute -right-20 -top-20 w-64 h-64 bg-white rounded-full"></div>
@@ -57,12 +65,6 @@ const AccountCard: React.FC<AccountCardProps> = ({accounts}) => {
                     </div>
 
                     <div className="flex items-center justify-end space-x-5">
-                        <button
-                            onClick={() => setShowNumber(!showNumber)}
-                            className="p-1.5 hover:bg-white/20 rounded-lg transition"
-                        >
-                            {showNumber ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
                         <div className="text-right font-mono text-base tracking-wider">
                             {formatIBAN(account.iban)}
                         </div>

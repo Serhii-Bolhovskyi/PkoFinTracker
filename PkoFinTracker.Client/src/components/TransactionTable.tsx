@@ -15,6 +15,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions}) => {
                 <table className="w-full">
                     <thead className="">
                     <tr className="border-b border-gray-800">
+                        <th>№</th>
                         <th>ID</th>
                         <th>Transaction</th>
                         <th>Category</th>
@@ -30,7 +31,8 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions}) => {
                                 index !== transactions.length - 1 ? 'border-b border-gray-800' : ''
                             }`}
                         >
-                            <td className="pl-5">
+                            <td className="pl-5"> {index + 1}</td>
+                            <td>
                                 #{t.id.substring(0, 8)}...
                             </td>
                             <td className="">

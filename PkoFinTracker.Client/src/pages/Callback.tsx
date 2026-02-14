@@ -16,8 +16,15 @@ export const Callback = () => {
         }
     }, [code])
     return (
-        <>
-        <p>Callback</p>
-        </>
+        <div className="fixed inset-0 bg-bank-main flex items-center justify-center">
+            <video
+                src="/src/assets/callback_animation.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full"
+            />
+        </div>
     )
 }
