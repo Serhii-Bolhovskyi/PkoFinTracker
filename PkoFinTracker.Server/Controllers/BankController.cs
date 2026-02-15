@@ -67,20 +67,22 @@ public class BankController : ControllerBase
         
         foreach (var account in session.Accounts)
         {
-            // get account details based on Account Uid
+            // get details(contains iban)
             var accountDetails = await _enableBankingService.GetAccountDetailsAsync(account.Uid, session.SessionId);
             
-            // get info about balances based on Account Uid
+            // get balance
             var balances = await _enableBankingService.GetBalancesAsync(account.Uid, session.SessionId);
             
-            // get Account from API and save into Db
+            // save/upd account in db
             await _accountService.SyncAccountAsync(accountDetails, balances);
             
+            // get transactions
             var res = await _enableBankingService.GetTransactionsAsync(account.Uid,
                 session.SessionId);
+            
             if (res?.Transactions != null)
             {
-                await _transactionService.SyncTransactionsAsync(res.Transactions, account.Uid);
+                await _transactionService.SyncTransactionsAsync(res.Transactions, accountDetails.AccountId.Iban);
             }
         }
         return Ok(session);

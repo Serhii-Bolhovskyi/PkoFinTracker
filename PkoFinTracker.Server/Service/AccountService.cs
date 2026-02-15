@@ -21,7 +21,7 @@ public class AccountService
         if (existingAccount != null)
         {
             existingAccount.BankUid = detail.Uid;
-            existingAccount.Balance = amount;
+            // existingAccount.Balance = amount;
             existingAccount.LastUpdated = DateTime.UtcNow;
         }
         else

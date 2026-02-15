@@ -35,17 +35,23 @@ public class TransactionService
         };
     }
 
-    public async Task SyncTransactionsAsync(List<TransactionsDto> transactionsDto, string bankUid)
+    public async Task SyncTransactionsAsync(List<TransactionsDto> transactionsDto, string iban)
     {
-        var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.BankUid == bankUid);
-        if (account == null)
-            throw new Exception("Account not found");
+        var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Iban == iban);
+        if (account == null) throw new Exception("Account not found");
+        
+        var existingIds = await _context.Transactions
+            .Where(t => t.BankAccountId == account.Id)
+            .Select(t => t.ExternalId)
+            .ToListAsync();
+        
+        var existingIdsSet = new HashSet<string>(existingIds);
         Console.WriteLine($"balance before: {account.Balance}");
         foreach (var dto in transactionsDto)
         {
             var targetId = dto.TransactionId ?? dto.EntryReference;
-            var isTransactionExists = await _context.Transactions.AnyAsync(t => t.ExternalId == targetId);
-            if (!isTransactionExists)
+
+            if (!existingIdsSet.Contains(targetId))
             {
                 var transaction = new Transaction
                 {
@@ -62,8 +68,11 @@ public class TransactionService
 
                     CategoryId = GetCategoryId(dto.MerchantCategoryCode), 
                 };
+                
                 await _context.Transactions.AddAsync(transaction);
-
+                
+                existingIdsSet.Add(targetId);
+                
                 if (dto.CreditDebitIndicator == "CRDT")
                 {
                     account.Balance += dto.TransactionAmount.Amount;
