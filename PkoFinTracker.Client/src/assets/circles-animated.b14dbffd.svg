@@ -1,0 +1,49 @@
+<svg
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 128 128"
+>
+  <circle cx="64" cy="64" r="61" stroke="#111" stroke-dasharray="32,4">
+    <animateTransform
+    attributeName="transform"
+    attributeType="XML"
+    type="rotate"
+    dur="30s"
+    from="0 64 64"
+    to="360 64 64"
+    repeatCount="indefinite" />
+  </circle>
+
+  <circle cx="64" cy="64" r="57" stroke="#171717" stroke-dasharray="24,8">
+    <animateTransform
+    attributeName="transform"
+    attributeType="XML"
+    type="rotate"
+    dur="40s"
+    from="360 64 64"
+    to="0 64 64"
+    repeatCount="indefinite" />
+  </circle>
+
+  <circle cx="64" cy="64" r="53" stroke="#222" stroke-dasharray="16,16">
+    <animateTransform
+    attributeName="transform"
+    attributeType="XML"
+    type="rotate"
+    dur="50s"
+    from="360 64 64"
+    to="0 64 64"
+    repeatCount="indefinite" />
+  </circle>
+
+  <circle cx="64" cy="64" r="49" stroke="#111" stroke-dasharray="4,4">
+    <animateTransform
+    attributeName="transform"
+    attributeType="XML"
+    type="rotate"
+    dur="60s"
+    from="0 64 64"
+    to="360 64 64"
+    repeatCount="indefinite" />
+  </circle>
+</svg>
