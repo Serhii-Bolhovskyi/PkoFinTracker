@@ -14,9 +14,11 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTransactions([FromQuery] int? limit)
+    public async Task<IActionResult> GetTransactions([FromQuery] int? limit, [FromQuery] int? pageNumber, [FromQuery] int? pageSize)
     {
-        var res = await _transactionService.GetAllTransactionAsync(limit);
+        Console.WriteLine($"Отримано: pageNumber={pageNumber}, pageSize={pageSize}");
+        var res = await _transactionService.GetAllTransactionAsync(limit, pageNumber, pageSize);
+        Console.WriteLine($"Повертаємо: PageNumber={res.PageNumber}");
         return Ok(res);
     }
 }

@@ -87,18 +87,28 @@ public class TransactionService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<TransactionDisplayDto>> GetAllTransactionAsync(int? limit =  null)
+    public async Task<TransactionPaginatedDto> GetAllTransactionAsync(int? limit = null, int? pageNumber = null, int? pageSize = null)
     {
+        
         var query = _context.Transactions
             .OrderByDescending(t => t.BookingDate)
             .AsQueryable();
+        
+        var totalCount = await query.CountAsync(); 
 
+        int page = pageNumber ?? 1;
+        int size = pageSize ?? 10;
+        
         if (limit.HasValue)
         {
             query = query.Take(limit.Value);
         }
+        else
+        {
+            query = query.Skip((page - 1) * size).Take(size);
+        }
         
-        return await query
+        var items =  await query
             .Select(t => new TransactionDisplayDto
             {
                 Id = t.Id,
@@ -109,5 +119,13 @@ public class TransactionService
                 CategoryName = t.Category != null ? t.Category.Name : "Other",
                 Indicator = t.Indicator,
             }).ToListAsync();
+
+        return new TransactionPaginatedDto
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = page,
+            TotalPages = (int)Math.Ceiling((double)totalCount / size)
+        };
     }
 }
