@@ -13,50 +13,84 @@ interface TransactionStats {
     countDiff: number;
 }
 
+interface PaginatedData {
+    items: Transaction[],
+    totalCount: number;
+    totalPages: number,
+    currentPage: number
+}
+
 interface TransactionContext {
-    transactions: Transaction[],
+    allTransactions: Transaction[],
+    paginatedData: PaginatedData,
     accounts: BankAccount[],
     stats: TransactionStats,
     loading: boolean,
-    refreshTransactions: () => Promise<void> // refresh data
+    refreshTransactions: () => Promise<void>// refresh data
+    goToPage: (page: number) => Promise<void>;
 }
 
 const TransactionContext = createContext<TransactionContext | null>(null);
 
 export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-    const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+    const [allTransactions, setAllTransactions] = React.useState<Transaction[]>([]);
     const [accounts, setAccounts] = React.useState<BankAccount[]>([]);
     const [loading, setLoading] = useState(true)
+
+    const [paginatedData, setPaginatedData] = useState<PaginatedData>({
+        items: [],
+        totalCount: 0,
+        totalPages: 0,
+        currentPage: 1
+    });
     
-    const fetchTransactions = async () => {
+    const loadInitialData = async () => {
         setLoading(true)
         try{
-            const res = await axios.get('http://localhost:5093/api/Transaction');
-            setTransactions(res.data)
+            const [transRes, paginatedRes, accRes] = await Promise.all([
+                 axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`), 
+                axios.get(`http://localhost:5093/api/Transaction?pageNumber=1&pageSize=10`),
+                 axios.get('http://localhost:5093/api/Account')
+            ])
+            
+            setAllTransactions(transRes.data.items);
+            setAccounts(accRes.data);
+
+            setPaginatedData({
+                items: paginatedRes.data.items,
+                totalCount: paginatedRes.data.totalCount,
+                totalPages: paginatedRes.data.totalPages,
+                currentPage: paginatedRes.data.pageNumber
+            });
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
     
-    const fetchAccounts = async () => {
+    const goToPage = async (pageNumber: number) => {
         setLoading(true)
-        try{
-            const res = await axios.get('http://localhost:5093/api/Account');
-            setAccounts(res.data)
-        } finally {
-            setLoading(false)
+        try {
+            const res = await axios.get(`http://localhost:5093/api/Transaction/?pageNumber=${pageNumber}&pageSize=10`);
+            console.log("Відповідь API:", res.data);
+            console.log("pageNumber з API:", res.data.pageNumber);
+            console.log("PageNumber з API:", res.data.PageNumber);
+            setPaginatedData({
+                items: res.data.items,
+                totalCount: res.data.totalCount,
+                totalPages: res.data.totalPages,
+                currentPage: res.data.pageNumber
+            });
+            console.log("Після setPaginatedData, новий currentPage:", res.data.pageNumber);
+        }
+        finally {
+            setLoading(false);
         }
     }
+
+    useEffect(() => {
+        loadInitialData();
+    }, []);
     
-
-    useEffect(() => {
-        fetchTransactions()
-    }, [])
-
-    useEffect(() => {
-        fetchAccounts()
-    }, [])
-
     const stats = useMemo(() => {
         // current date
         const currMonth = new Date().getMonth();
@@ -67,7 +101,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         const prevMonth = prevDate.getMonth();
         const prevYear = prevDate.getFullYear();
 
-        const result = transactions.reduce(
+        const result = allTransactions.reduce(
             (acc, t) => {
                 const tDate = new Date(t.bookingDate);
                 const tMonth = tDate.getMonth();
@@ -111,15 +145,17 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             totalCount: result.currCount,
             countDiff: countDiff
         }
-    }, [transactions]);
+    }, [allTransactions]);
     
     return (
         <TransactionContext.Provider value={{
-            transactions,
+            allTransactions,
+            paginatedData,
             accounts,
             stats,
             loading,
-            refreshTransactions: fetchTransactions
+            refreshTransactions: loadInitialData,
+            goToPage
         }}>
             {children}
         </TransactionContext.Provider>

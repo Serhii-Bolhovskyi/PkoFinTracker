@@ -7,6 +7,8 @@ import {RechartsDevtools} from "@recharts/devtools";
 const Cashflow: React.FC<TransactionProps> = ({transactions}) => {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+    console.log(transactions);
+    
     const chartData = useMemo(() => {
 
         const data = monthNames.map(name => ({

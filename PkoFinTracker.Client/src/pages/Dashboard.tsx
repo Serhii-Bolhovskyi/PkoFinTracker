@@ -12,13 +12,13 @@ import {useTransactions} from "../context/TransactionContext.tsx";
 
 
 export const Dashboard: React.FC = () => {
-    const { transactions, stats, accounts } = useTransactions()
+    const { allTransactions, stats, accounts } = useTransactions()
     const [recentTransactions, setRecentTransactions] = React.useState<Transaction[]>([]);
     
     useEffect(() => {
         axios.get('http://localhost:5093/api/Transaction?limit=5')
             .then(res => {
-                setRecentTransactions(res.data);
+                setRecentTransactions(res.data.items);
             }).catch(err => console.log(err));
     }, []);
     
@@ -26,7 +26,7 @@ export const Dashboard: React.FC = () => {
             <div className="grid grid-cols-12 gap-3">
                 <Greetings accounts={accounts}/>
                 {accounts.length > 0 && <AccountCard accounts={accounts} />}
-                <Cashflow transactions={transactions} page="dashboard"/>
+                <Cashflow transactions={allTransactions} pageType="dashboard"/>
                 {accounts.length > 0 && <>
                     <div className="col-start-1 col-span-2">
                         <StatCard title="Total Income" amount={stats.totalIncome} diff={stats.incomeDiff} currency={accounts[0].currency} type='income' page='dashboard'/>
@@ -36,7 +36,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </>}
                 <div className="col-span-8 row-span-2 col-start-1 overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
-                    <TransactionTable transactions={recentTransactions} page="dashboard"/>
+                    <TransactionTable transactions={recentTransactions} pageType="dashboard"/>
                 </div>
             </div>
     )

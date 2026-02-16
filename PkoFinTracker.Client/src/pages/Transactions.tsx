@@ -5,7 +5,21 @@ import { BanknoteArrowDown, BanknoteArrowUp, WalletCards } from 'lucide-react';
 import TransactionTable from "../components/TransactionTable.tsx";
 
 const Transactions: React.FC = () => {
-    const {transactions, stats, accounts} = useTransactions();
+    const {paginatedData, goToPage ,stats, accounts} = useTransactions();
+
+    console.log("Transactions render, paginatedData:", paginatedData);
+    console.log("currentPage з контексту:", paginatedData.currentPage);
+
+    // const currMonth = new Date().getMonth();
+    // const currYear = new Date().getFullYear();
+    //
+    // const currMonthTransactions = paginatedData.items.filter(t => {
+    //     const tDate = new Date(t.bookingDate);
+    //     return tDate.getMonth() === currMonth && tDate.getFullYear() === currYear;
+    // });
+
+    // console.log(currMonthTransactions);
+    
     return (
         <div className="grid grid-cols-12 gap-3">
             {accounts.length > 0 &&
@@ -49,7 +63,14 @@ const Transactions: React.FC = () => {
                 </>
             }
             <div className="col-span-9 row-span-12 overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
-                <TransactionTable  transactions={transactions} page="transactions"/>
+                <TransactionTable  
+                    transactions={paginatedData.items} 
+                    pageType="transactions" 
+                    totalCount={paginatedData.totalCount}
+                    currentPage={paginatedData.currentPage}
+                    totalPages={paginatedData.totalPages}
+                    onPageChange={(page) => goToPage(page)}
+                />
             </div>
         </div>
     )
