@@ -3,12 +3,13 @@ import type {Transaction} from "../types/Transaction.ts";
 
 export interface TransactionProps {
     transactions: Transaction[];
+    page: 'dashboard' | 'transactions';
 }
-const TransactionTable:React.FC<TransactionProps> = ({transactions}) => {
+const TransactionTable:React.FC<TransactionProps> = ({transactions, page}) => {
     return(
-        <div className="col-span-8 row-span-2 col-start-1 overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
+        <>
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
-                <h1 className="text-xl font-normal">Recent Transaction</h1>
+                <h1 className="text-xl font-normal">{page === 'dashboard' ? 'Recent Transactions': 'Transactions'}</h1>
             </div>
 
             <div className="overflow-x-auto max-h-60">
@@ -46,8 +47,8 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions}) => {
                                         {t.description?.charAt(0).toUpperCase() || 'T'}
                                     </div>
                                     <span className="max-w-40 truncate">
-                                        {t.description}
-                                        </span>
+                                            {t.description}
+                                            </span>
                                 </div>
                             </td>
                             <td>
@@ -75,7 +76,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions}) => {
                     <p>Немає транзакцій для відображення</p>
                 </div>
             )}
-        </div>
+        </>
     )
 }
 export default TransactionTable
