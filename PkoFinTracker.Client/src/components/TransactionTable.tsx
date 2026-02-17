@@ -1,10 +1,13 @@
 import * as React from "react";
 import type {Transaction} from "../types/Transaction.ts";
-import {EllipsisVertical, SquareChevronLeft, SquareChevronRight} from 'lucide-react';
+import {EllipsisVertical, SquareChevronLeft, SquareChevronRight, CalendarDays, SlidersHorizontal} from 'lucide-react';
 import {useTransactions} from "../context/TransactionContext.tsx";
 
 import "react-datepicker/dist/react-datepicker.css";
+import "../datepicker-custom.css"
 import DatePicker from "react-datepicker";
+import {forwardRef} from "react";
+
 
 export interface TransactionProps {
     transactions: Transaction[];
@@ -14,26 +17,52 @@ export interface TransactionProps {
     totalCount?: number;
     onPageChange?: (page: number) => void;
 }
+
+
+interface CalendarTriggerProps {
+    onClick?: () => void;
+    value?: string;
+}
+
+const CalendarTrigger = forwardRef<HTMLButtonElement, CalendarTriggerProps>(
+    ({ onClick }, ref) => (
+        <button
+            ref={ref}
+            onClick={onClick}
+            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+        >
+            <CalendarDays className="w-6 h-6" />
+        </button>
+    )
+);
+
+
 const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, currentPage, totalPages, totalCount, onPageChange}) => {
     const {dateRange, setDateRange} = useTransactions();
+    
     const pageSize = 10;
     const from = (currentPage!  - 1) * pageSize + 1;
     const to = Math.min(currentPage! * pageSize, totalCount!);
+    
     return(
         <>
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
                 <h1 className="text-xl font-normal">{pageType === 'dashboard' ? 'Recent Transactions': 'Transactions'}</h1>
                 {pageType === 'transactions' && 
-                    <div className="relative z-20">
-                    <DatePicker
-                        selectsRange={true}
-                        startDate={dateRange[0]}
-                        endDate={dateRange[1]}
-                        onChange={(update) => setDateRange(update)}
-                        isClearable={true}
-                        placeholderText="Filter by date range"
-                        className="z-100 bg-bank-comp border border-gray-800 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer w-64"
-                    />
+                    <div className="flex items-center relative z-20">
+                        <DatePicker
+                            selectsRange={true}
+                            startDate={dateRange[0]}
+                            endDate={dateRange[1]}
+                            onChange={(update) => setDateRange(update)}
+                            isClearable={true}
+                            calendarClassName="dark-calendar"
+                            customInput={<CalendarTrigger />}
+                        />
+                        <div className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                            <SlidersHorizontal className="w-6 h-6"/>
+                        </div>
+                        
                 </div>}
             </div>
 

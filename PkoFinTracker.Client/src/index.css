@@ -37,6 +37,7 @@
     display: none; /* Chrome/Safari */
 }
 
+
 /*callback animation*/
 @keyframes fade-in {
     from {
@@ -88,4 +89,5 @@
 .animate-slide-up {
     animation: slide-up 0.8s ease-out 0.3s both;
 }
+
 
