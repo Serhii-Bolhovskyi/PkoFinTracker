@@ -1,6 +1,10 @@
 import * as React from "react";
 import type {Transaction} from "../types/Transaction.ts";
 import {EllipsisVertical, SquareChevronLeft, SquareChevronRight} from 'lucide-react';
+import {useTransactions} from "../context/TransactionContext.tsx";
+
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
 
 export interface TransactionProps {
     transactions: Transaction[];
@@ -11,14 +15,29 @@ export interface TransactionProps {
     onPageChange?: (page: number) => void;
 }
 const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, currentPage, totalPages, totalCount, onPageChange}) => {
-    // console.log(transactions)
+    const {dateRange, setDateRange} = useTransactions();
+    const pageSize = 10;
+    const from = (currentPage!  - 1) * pageSize + 1;
+    const to = Math.min(currentPage! * pageSize, totalCount!);
     return(
         <>
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
                 <h1 className="text-xl font-normal">{pageType === 'dashboard' ? 'Recent Transactions': 'Transactions'}</h1>
+                {pageType === 'transactions' && 
+                    <div className="relative z-20">
+                    <DatePicker
+                        selectsRange={true}
+                        startDate={dateRange[0]}
+                        endDate={dateRange[1]}
+                        onChange={(update) => setDateRange(update)}
+                        isClearable={true}
+                        placeholderText="Filter by date range"
+                        className="z-100 bg-bank-comp border border-gray-800 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer w-64"
+                    />
+                </div>}
             </div>
 
-            <div className={`${pageType === 'transactions' ? '' : 'max-h-60'} overflow-x-auto`}>
+            <div className={`${pageType === 'transactions' ? 'h-168' : 'max-h-60'} overflow-x-auto`}>
                 <table className="w-full">
                     <thead className="">
                     <tr className="border-b border-gray-800">
@@ -39,7 +58,11 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                                 index !== transactions.length - 1 ? 'border-b border-gray-800' : ''
                             }`}
                         >
-                            <td className="pl-5"> {index + 1}</td>
+                            <td className="pl-5"> {pageType === "transactions" 
+                                ? (currentPage! - 1) * 10 + (index + 1)
+                                : (index + 1)
+                            }
+                            </td>
                             <td>
                                 #{t.id.substring(0, 8)}...
                             </td>
@@ -53,13 +76,15 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                                     >
                                         {t.description?.charAt(0).toUpperCase() || 'T'}
                                     </div>
-                                    <span className="max-w-40 truncate">
-                                            {t.description}
-                                            </span>
+                                    <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
+                                        {t.description}
+                                    </div>
                                 </div>
                             </td>
-                            <td>
-                                {t.categoryName}
+                            <td className="">
+                                <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
+                                    {t.categoryName}
+                                </div>
                             </td>
                             <td className="whitespace-nowrap">
                                 {new Date(t.bookingDate).toLocaleDateString('en-US', {
@@ -88,15 +113,16 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
             )}
             {pageType === 'transactions' && 
                 <div className="flex items-center justify-between p-5">
-                    <span> of {totalCount}</span>
+                    <div className="flex items-center gap-3 opacity-60">
+                        <span>{from} - {to}</span>
+                        of
+                        <span>{totalCount}</span>
+                    </div>
                     <div className="flex items-center gap-10">
                         <span>Rows per page: 10 </span>
                         <div className="flex items-center gap-4">
                             <button 
-                                onClick={() => {
-                                    console.log("Кнопка натиснута! Наступна сторінка:", currentPage! - 1);
-                                    onPageChange?.(currentPage! - 1)}
-                                }
+                                onClick={() => onPageChange?.(currentPage! - 1)}
                                 disabled={currentPage === 1}
                                 className="disabled:opacity-30"
                             >
@@ -106,11 +132,8 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                             <span>{currentPage}/{totalPages}</span>
 
                             <button
-                                onClick={() => {
-                                    console.log("Кнопка 'Вперед' натиснута. Йдемо на:", currentPage! + 1);
-                                    onPageChange?.(currentPage! + 1); // ДОДАЄМО 1
-                                }}
-                                disabled={currentPage === totalPages} // Блокуємо, якщо ми на останній
+                                onClick={() => onPageChange?.(currentPage! + 1)}
+                                disabled={currentPage === totalPages}
                                 className="disabled:opacity-30"
                             >
                                 <SquareChevronRight className="w-6 h-6 cursor-pointer" />

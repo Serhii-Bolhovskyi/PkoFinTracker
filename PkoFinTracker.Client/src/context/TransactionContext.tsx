@@ -28,6 +28,9 @@ interface TransactionContext {
     loading: boolean,
     refreshTransactions: () => Promise<void>// refresh data
     goToPage: (page: number) => Promise<void>;
+    
+    dateRange: [Date | null, Date | null];
+    setDateRange: (range: [Date | null, Date | null]) => void;
 }
 
 const TransactionContext = createContext<TransactionContext | null>(null);
@@ -44,13 +47,19 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         currentPage: 1
     });
     
+    const [dateRange, setDateRange] = React.useState<[Date | null, Date | null]>([null, null]);
+    
     const loadInitialData = async () => {
         setLoading(true)
         try{
+            
+            const from = dateRange[0] && `from=${dateRange[0]?.toISOString()}`;
+            const to = dateRange[1] && `&to=${dateRange[1]?.toISOString()}`;
+            
             const [transRes, paginatedRes, accRes] = await Promise.all([
-                 axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`), 
-                axios.get(`http://localhost:5093/api/Transaction?pageNumber=1&pageSize=10`),
-                 axios.get('http://localhost:5093/api/Account')
+                axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`), 
+                axios.get(`http://localhost:5093/api/Transaction?${from}${to}&pageNumber=1&pageSize=10`),
+                axios.get('http://localhost:5093/api/Account')
             ])
             
             setAllTransactions(transRes.data.items);
@@ -70,17 +79,16 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const goToPage = async (pageNumber: number) => {
         setLoading(true)
         try {
-            const res = await axios.get(`http://localhost:5093/api/Transaction/?pageNumber=${pageNumber}&pageSize=10`);
-            console.log("Відповідь API:", res.data);
-            console.log("pageNumber з API:", res.data.pageNumber);
-            console.log("PageNumber з API:", res.data.PageNumber);
+            const from = dateRange[0] && `from=${dateRange[0]?.toISOString()}`;
+            const to = dateRange[1] && `&to=${dateRange[1]?.toISOString()}`;
+            const res = await axios.get(
+                `http://localhost:5093/api/Transaction/?${from}${to}&pageNumber=${pageNumber}&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
                 totalPages: res.data.totalPages,
                 currentPage: res.data.pageNumber
             });
-            console.log("Після setPaginatedData, новий currentPage:", res.data.pageNumber);
         }
         finally {
             setLoading(false);
@@ -88,8 +96,10 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     }
 
     useEffect(() => {
-        loadInitialData();
-    }, []);
+        if ((dateRange[0] && dateRange[1]) || (!dateRange[0] && !dateRange[1])) {
+            loadInitialData();
+        }
+    }, [dateRange]);
     
     const stats = useMemo(() => {
         // current date
@@ -154,6 +164,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             accounts,
             stats,
             loading,
+            dateRange,
+            setDateRange,
             refreshTransactions: loadInitialData,
             goToPage
         }}>

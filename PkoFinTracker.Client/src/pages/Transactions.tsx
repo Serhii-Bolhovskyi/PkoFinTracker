@@ -7,8 +7,6 @@ import TransactionTable from "../components/TransactionTable.tsx";
 const Transactions: React.FC = () => {
     const {paginatedData, goToPage ,stats, accounts} = useTransactions();
 
-    console.log("Transactions render, paginatedData:", paginatedData);
-    console.log("currentPage з контексту:", paginatedData.currentPage);
 
     // const currMonth = new Date().getMonth();
     // const currYear = new Date().getFullYear();
