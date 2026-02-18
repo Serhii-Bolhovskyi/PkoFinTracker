@@ -17,9 +17,10 @@ public class TransactionController : ControllerBase
     public async Task<IActionResult> GetTransactions(
         [FromQuery] int? limit, 
         [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
-        [FromQuery]  DateTime? from, [FromQuery] DateTime? to)
+        [FromQuery]  DateTime? from, [FromQuery] DateTime? to,
+        [FromQuery]  string? description)
     {
-        var res = await _transactionService.GetAllTransactionAsync(limit, pageNumber, pageSize, from, to);
+        var res = await _transactionService.GetAllTransactionAsync(limit, pageNumber, pageSize, from, to, description);
         return Ok(res);
     }
 }

@@ -38,7 +38,7 @@ const CalendarTrigger = forwardRef<HTMLButtonElement, CalendarTriggerProps>(
 
 
 const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, currentPage, totalPages, totalCount, onPageChange}) => {
-    const {dateRange, setDateRange} = useTransactions();
+    const {dateRange, description, setDateRange, setDescription} = useTransactions();
     
     const pageSize = 10;
     const from = (currentPage!  - 1) * pageSize + 1;
@@ -50,19 +50,27 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                 <h1 className="text-xl font-normal">{pageType === 'dashboard' ? 'Recent Transactions': 'Transactions'}</h1>
                 {pageType === 'transactions' && 
                     <div className="flex items-center relative z-20">
-                        <DatePicker
-                            selectsRange={true}
-                            startDate={dateRange[0]}
-                            endDate={dateRange[1]}
-                            onChange={(update) => setDateRange(update)}
-                            isClearable={true}
-                            calendarClassName="dark-calendar"
-                            customInput={<CalendarTrigger />}
+                        <input
+                            className="w-60 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors outline-none"
+                            placeholder="Search..."
+                            type="text" 
+                            value={description ?? ""}
+                            onChange={(e) => setDescription(e.target.value)}
                         />
-                        <div className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
-                            <SlidersHorizontal className="w-6 h-6"/>
+                        <div className="flex items-center">
+                            <DatePicker
+                                selectsRange={true}
+                                startDate={dateRange[0]}
+                                endDate={dateRange[1]}
+                                onChange={(update) => setDateRange(update)}
+                                isClearable={true}
+                                calendarClassName="dark-calendar"
+                                customInput={<CalendarTrigger />}
+                            />
+                            <div className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                                <SlidersHorizontal className="w-6 h-6"/>
+                            </div>
                         </div>
-                        
                 </div>}
             </div>
 

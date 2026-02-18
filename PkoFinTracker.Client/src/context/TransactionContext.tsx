@@ -31,6 +31,9 @@ interface TransactionContext {
     
     dateRange: [Date | null, Date | null];
     setDateRange: (range: [Date | null, Date | null]) => void;
+    
+    description: string | null;
+    setDescription: (description: string | null) => void;
 }
 
 const TransactionContext = createContext<TransactionContext | null>(null);
@@ -48,30 +51,40 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     });
     
     const [dateRange, setDateRange] = React.useState<[Date | null, Date | null]>([null, null]);
+    const [description, setDescription] = React.useState<string | null>("");
     
     const loadInitialData = async () => {
         setLoading(true)
         try{
-            
-            const from = dateRange[0] && `from=${dateRange[0]?.toISOString()}`;
-            const to = dateRange[1] && `&to=${dateRange[1]?.toISOString()}`;
-            
-            const [transRes, paginatedRes, accRes] = await Promise.all([
-                axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`), 
-                axios.get(`http://localhost:5093/api/Transaction?${from}${to}&pageNumber=1&pageSize=10`),
+            const [transRes, accRes] = await Promise.all([
+                axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`),
                 axios.get('http://localhost:5093/api/Account')
             ])
             
             setAllTransactions(transRes.data.items);
             setAccounts(accRes.data);
-
-            setPaginatedData({
-                items: paginatedRes.data.items,
-                totalCount: paginatedRes.data.totalCount,
-                totalPages: paginatedRes.data.totalPages,
-                currentPage: paginatedRes.data.pageNumber
-            });
+            console.log(1)
         } finally {
+            setLoading(false);
+        }
+    }
+    
+    const loadPaginatedData = async() => {
+        try{
+            setLoading(true)
+            const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
+            const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
+
+            const descSearch = description! && `&description=${description}`;
+            
+            const res = await axios.get(`http://localhost:5093/api/Transaction?${from}${to}${descSearch}&pageNumber=1&pageSize=10`);
+            setPaginatedData({
+                items: res.data.items,
+                totalCount: res.data.totalCount,
+                totalPages: res.data.totalPages,
+                currentPage: res.data.pageNumber
+            });
+        }finally {
             setLoading(false);
         }
     }
@@ -79,8 +92,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const goToPage = async (pageNumber: number) => {
         setLoading(true)
         try {
-            const from = dateRange[0] && `from=${dateRange[0]?.toISOString()}`;
-            const to = dateRange[1] && `&to=${dateRange[1]?.toISOString()}`;
+            const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
+            const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
             const res = await axios.get(
                 `http://localhost:5093/api/Transaction/?${from}${to}&pageNumber=${pageNumber}&pageSize=10`);
             setPaginatedData({
@@ -96,10 +109,16 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     }
 
     useEffect(() => {
-        if ((dateRange[0] && dateRange[1]) || (!dateRange[0] && !dateRange[1])) {
-            loadInitialData();
-        }
-    }, [dateRange]);
+        loadInitialData();
+        loadPaginatedData()
+    }, []);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            loadPaginatedData();
+        }, 1000)
+        return () => clearTimeout(handler);
+    }, [dateRange, description]);
     
     const stats = useMemo(() => {
         // current date
@@ -165,6 +184,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             stats,
             loading,
             dateRange,
+            description,
+            setDescription,
             setDateRange,
             refreshTransactions: loadInitialData,
             goToPage

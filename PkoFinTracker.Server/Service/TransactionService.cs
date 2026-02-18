@@ -90,7 +90,8 @@ public class TransactionService
     public async Task<TransactionPaginatedDto> GetAllTransactionAsync(
         int? limit = null, 
         int? pageNumber = null, int? pageSize = null, 
-        DateTime? from = null,  DateTime? to = null)
+        DateTime? from = null,  DateTime? to = null,
+        string? description = null)
     {
         var query = _context.Transactions
             .OrderByDescending(t => t.BookingDate)
@@ -99,13 +100,18 @@ public class TransactionService
         if (from.HasValue)
         {
             from = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
-            query = query.Where(t => t.BookingDate >= from.Value);
+            query = query.Where(t => t.BookingDate >= from.Value.Date);
         }
 
         if (to.HasValue)
         {
             to = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
-            query = query.Where(t => t.BookingDate <= to.Value);
+            query = query.Where(t => t.BookingDate <= to.Value.Date);
+        }
+        
+        if (description != null)
+        {
+            query = query.Where(t => t.Description.ToLower().Contains(description.ToLower()));
         }
         
         var totalCount = await query.CountAsync(); 
