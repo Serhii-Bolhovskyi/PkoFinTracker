@@ -54,7 +54,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                 {pageType === 'transactions' && 
                     <div className="flex items-center relative z-20">
                         <input
-                            className="w-60 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors outline-none"
+                            className="w-60 p-2 mr-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors outline-none"
                             placeholder="Search..."
                             type="text" 
                             value={description ?? ""}
@@ -196,8 +196,9 @@ interface FilterModalProps {
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
-    const {selectedCategoryIds, setSelectedCategoryIds} = useTransactions();
+    const {selectedCategoryIds, indicator, setIndicator, setSelectedCategoryIds} = useTransactions();
     const [tempIds, setTempIds] = useState<number[]>(selectedCategoryIds);
+    const [tempIndicator, setTempIndicator] = useState<string>(indicator || "");
     
     const toggleCategory = (id: number) => {
         setTempIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -206,6 +207,7 @@ const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         setSelectedCategoryIds(tempIds)
+        setIndicator(tempIndicator)
         onClose()
     }
     
@@ -236,12 +238,43 @@ const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
                         )
                     })}
                 </div>
+                
+                <div className="flex py-2 items-center gap-3 mb-4">
+                    <div className="h-px w-full bg-white/30"></div>
+                    <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Transaction type</h1>
+                    <div className="h-px w-full bg-white/30"></div>
+                </div>
+
+                <div className="flex gap-3 text-white/70 text-sm leading-relaxed">
+                    {[
+                        {label: 'All', value: ""},
+                        {label: 'Income', value: 'CRDT'},
+                        {label: 'Expense', value: "DBIT"}
+                    ].map((type) => {
+                        return (
+                            <button
+                                type="button"
+                                key={type.value}
+                                onClick={() => setTempIndicator(type.value)}
+                                className={`px-4 py-2 rounded-xl border transition-all duration-200 text-sm
+                                    ${tempIndicator === type.value
+                                    ? 'border-purple-500 bg-purple-500/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                                    : 'border-white/10 text-white/60 hover:border-white/30 hover:bg-white/5'
+                                }`}>
+                                {type.label}
+                            </button>
+                        )
+                    })}
+                </div>
+                
                 <div className="flex gap-4 mt-4">
                     <button
                         type="button"
                         onClick={() => {
                             setSelectedCategoryIds([])
                             setTempIds([])
+                            setIndicator("")
+                            setTempIndicator("")
                             onClose()
                         }}
                         className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/5 transition"

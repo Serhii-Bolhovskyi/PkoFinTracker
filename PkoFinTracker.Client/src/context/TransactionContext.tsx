@@ -31,7 +31,7 @@ interface TransactionContext {
     accounts: BankAccount[],
     stats: TransactionStats,
     loading: boolean,
-    refreshTransactions: () => Promise<void>// refresh data
+    refreshTransactions: () => Promise<void>// refresh data - delete
     goToPage: (page: number) => Promise<void>;
     
     dateRange: [Date | null, Date | null];
@@ -43,6 +43,9 @@ interface TransactionContext {
     categories: Category[];
     selectedCategoryIds: number[];
     setSelectedCategoryIds: (selectedCategoryIds: number[]) => void;
+    
+    indicator: string | null;
+    setIndicator: (indicator: string | null) => void;
 }
 
 const TransactionContext = createContext<TransactionContext | null>(null);
@@ -64,6 +67,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     
     const [categories, setCategories] = React.useState<Category[]>([]);
     const [selectedCategoryIds, setSelectedCategoryIds] = React.useState<number[]>([]);
+    
+    const [indicator, setIndicator] = React.useState<string | null>("");
     
     const loadInitialData = async () => {
         setLoading(true)
@@ -95,7 +100,9 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
                 ? selectedCategoryIds.map(id => `&categoryIds=${id}`).join('')
                 : "";
             
-            const res = await axios.get(`http://localhost:5093/api/Transaction?${from}${to}${descSearch}${categoryParams}&pageNumber=1&pageSize=10`);
+            const indicatorParams = indicator ? `&indicator=${indicator}` : "";
+            
+            const res = await axios.get(`http://localhost:5093/api/Transaction?${from}${to}${descSearch}${categoryParams}${indicatorParams}&pageNumber=1&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -136,7 +143,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             loadPaginatedData();
         }, 1000)
         return () => clearTimeout(handler);
-    }, [dateRange, description, selectedCategoryIds]);
+    }, [dateRange, description, selectedCategoryIds ,indicator]);
     
     const stats = useMemo(() => {
         // current date
@@ -204,11 +211,13 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             dateRange,
             description,
             categories,
+            indicator,
             selectedCategoryIds,
+            setIndicator,
             setSelectedCategoryIds,
             setDescription,
             setDateRange,
-            refreshTransactions: loadInitialData,
+            refreshTransactions: loadInitialData, // delete later
             goToPage
         }}>
             {children}

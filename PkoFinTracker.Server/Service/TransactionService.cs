@@ -92,7 +92,8 @@ public class TransactionService
         int? pageNumber = null, int? pageSize = null, 
         DateTime? from = null,  DateTime? to = null,
         string? description = null,
-        List<int>? categoryIds = null
+        List<int>? categoryIds = null,
+        string? indicator = null
         )
     {
         var query = _context.Transactions
@@ -119,6 +120,11 @@ public class TransactionService
         if (categoryIds != null && categoryIds.Any())
         {
             query = query.Where(t => categoryIds.Contains(t.CategoryId ?? 0));
+        }
+
+        if (!string.IsNullOrEmpty(indicator))
+        {
+            query = query.Where(t => t.Indicator.ToLower().Contains(indicator.ToLower()));
         }
         
         var totalCount = await query.CountAsync(); 
