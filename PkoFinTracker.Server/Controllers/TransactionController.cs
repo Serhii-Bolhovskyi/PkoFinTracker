@@ -18,9 +18,22 @@ public class TransactionController : ControllerBase
         [FromQuery] int? limit, 
         [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
         [FromQuery]  DateTime? from, [FromQuery] DateTime? to,
-        [FromQuery]  string? description)
+        [FromQuery]  string? description,
+        [FromQuery]  List<int>? categoryIds)
     {
-        var res = await _transactionService.GetAllTransactionAsync(limit, pageNumber, pageSize, from, to, description);
+        var res = await _transactionService.GetAllTransactionAsync(
+            limit,
+            pageNumber, pageSize,
+            from, to,
+            description,
+            categoryIds);
+        return Ok(res);
+    }
+
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetTransaction()
+    {
+        var res = await _transactionService.GetCategoriesAsync();
         return Ok(res);
     }
 }

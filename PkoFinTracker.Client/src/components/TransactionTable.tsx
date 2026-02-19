@@ -1,12 +1,12 @@
 import * as React from "react";
 import type {Transaction} from "../types/Transaction.ts";
 import {EllipsisVertical, SquareChevronLeft, SquareChevronRight, CalendarDays, SlidersHorizontal} from 'lucide-react';
-import {useTransactions} from "../context/TransactionContext.tsx";
+import {type Category, useTransactions} from "../context/TransactionContext.tsx";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "../datepicker-custom.css"
 import DatePicker from "react-datepicker";
-import {forwardRef} from "react";
+import {forwardRef, useState} from "react";
 
 
 export interface TransactionProps {
@@ -38,7 +38,10 @@ const CalendarTrigger = forwardRef<HTMLButtonElement, CalendarTriggerProps>(
 
 
 const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, currentPage, totalPages, totalCount, onPageChange}) => {
-    const {dateRange, description, setDateRange, setDescription} = useTransactions();
+    const {dateRange, description, categories, setDateRange, setDescription} = useTransactions();
+    const [isOpen, setIsOpen] = React.useState(false);
+    
+    const onClose = () => setIsOpen(false);
     
     const pageSize = 10;
     const from = (currentPage!  - 1) * pageSize + 1;
@@ -67,8 +70,11 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                                 calendarClassName="dark-calendar"
                                 customInput={<CalendarTrigger />}
                             />
-                            <div className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
-                                <SlidersHorizontal className="w-6 h-6"/>
+                            <div className="relative p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                                <SlidersHorizontal
+                                    onClick={() => setIsOpen(!isOpen)}
+                                    className="w-6 h-6" 
+                                />
                             </div>
                         </div>
                 </div>}
@@ -179,7 +185,78 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                         
                     </div>
                 </div>}
+            {isOpen && <FilterModal categories={categories} onClose={onClose}/>}
         </>
+    )
+}
+
+interface FilterModalProps {
+    categories: Category[];
+    onClose: () => void;
+}
+
+const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
+    const {selectedCategoryIds, setSelectedCategoryIds} = useTransactions();
+    const [tempIds, setTempIds] = useState<number[]>(selectedCategoryIds);
+    
+    const toggleCategory = (id: number) => {
+        setTempIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    }
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        setSelectedCategoryIds(tempIds)
+        onClose()
+    }
+    
+    return(
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-30 flex items-center justify-center">
+            <form onSubmit={handleSubmit} className="relative w-120 p-6 rounded-2xl bg-bank-comp shadow-2xl border border-white/10 z-50">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="h-px w-full bg-white/30"></div>
+                    <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Category</h1>
+                    <div className="h-px w-full bg-white/30"></div>
+                </div>
+                
+                <div className="max-h-40 overflow-y-auto flex gap-3 flex-wrap text-white/70 text-sm leading-relaxed">
+                    {categories.map((category) => {
+                        const isSelected = tempIds.includes(category.id);
+                        return (
+                            <button
+                                type="button"
+                                key={category.id}
+                                onClick={() => toggleCategory(category.id)}
+                                className={`px-4 py-2 rounded-xl border transition-all duration-200 text-sm
+                                    ${isSelected
+                                    ? 'border-purple-500 bg-purple-500/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                                    : 'border-white/10 text-white/60 hover:border-white/30 hover:bg-white/5'
+                                }`}>
+                                {category.name}
+                            </button>
+                        )
+                    })}
+                </div>
+                <div className="flex gap-4 mt-4">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setSelectedCategoryIds([])
+                            setTempIds([])
+                            onClose()
+                        }}
+                        className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/5 transition"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="flex-1 px-4 py-3 rounded-xl bg-bank-purple text-white font-bold hover:bg-purple-500 shadow-lg shadow-purple-600/20 transition"
+                    >
+                        Apply
+                    </button>
+                </div>
+            </form>
+        </div>
     )
 }
 export default TransactionTable

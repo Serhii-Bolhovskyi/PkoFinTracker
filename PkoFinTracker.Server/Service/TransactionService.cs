@@ -91,7 +91,9 @@ public class TransactionService
         int? limit = null, 
         int? pageNumber = null, int? pageSize = null, 
         DateTime? from = null,  DateTime? to = null,
-        string? description = null)
+        string? description = null,
+        List<int>? categoryIds = null
+        )
     {
         var query = _context.Transactions
             .OrderByDescending(t => t.BookingDate)
@@ -112,6 +114,11 @@ public class TransactionService
         if (description != null)
         {
             query = query.Where(t => t.Description.ToLower().Contains(description.ToLower()));
+        }
+
+        if (categoryIds != null && categoryIds.Any())
+        {
+            query = query.Where(t => categoryIds.Contains(t.CategoryId ?? 0));
         }
         
         var totalCount = await query.CountAsync(); 
@@ -147,5 +154,16 @@ public class TransactionService
             PageNumber = page,
             TotalPages = (int)Math.Ceiling((double)totalCount / size)
         };
+    }
+
+    public async Task<List<Category>> GetCategoriesAsync()
+    {
+        var query = await _context.Categories.Select(i => new Category
+        {
+            Id = i.Id,
+            Name = i.Name
+        }).ToListAsync();
+        
+        return query;
     }
 }

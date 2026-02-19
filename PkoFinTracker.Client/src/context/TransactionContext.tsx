@@ -20,6 +20,11 @@ interface PaginatedData {
     currentPage: number
 }
 
+export interface Category {
+    id: number;
+    name: string;
+}
+
 interface TransactionContext {
     allTransactions: Transaction[],
     paginatedData: PaginatedData,
@@ -34,6 +39,10 @@ interface TransactionContext {
     
     description: string | null;
     setDescription: (description: string | null) => void;
+
+    categories: Category[];
+    selectedCategoryIds: number[];
+    setSelectedCategoryIds: (selectedCategoryIds: number[]) => void;
 }
 
 const TransactionContext = createContext<TransactionContext | null>(null);
@@ -53,17 +62,22 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const [dateRange, setDateRange] = React.useState<[Date | null, Date | null]>([null, null]);
     const [description, setDescription] = React.useState<string | null>("");
     
+    const [categories, setCategories] = React.useState<Category[]>([]);
+    const [selectedCategoryIds, setSelectedCategoryIds] = React.useState<number[]>([]);
+    
     const loadInitialData = async () => {
         setLoading(true)
         try{
-            const [transRes, accRes] = await Promise.all([
+            const [transRes, accRes, catRes] = await Promise.all([
                 axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`),
-                axios.get('http://localhost:5093/api/Account')
+                axios.get('http://localhost:5093/api/Account'),
+                axios.get('http://localhost:5093/api/Transaction/categories')
             ])
             
             setAllTransactions(transRes.data.items);
             setAccounts(accRes.data);
-            console.log(1)
+            setCategories(catRes.data);
+
         } finally {
             setLoading(false);
         }
@@ -76,8 +90,12 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
 
             const descSearch = description! && `&description=${description}`;
+
+            const categoryParams = selectedCategoryIds && selectedCategoryIds.length > 0
+                ? selectedCategoryIds.map(id => `&categoryIds=${id}`).join('')
+                : "";
             
-            const res = await axios.get(`http://localhost:5093/api/Transaction?${from}${to}${descSearch}&pageNumber=1&pageSize=10`);
+            const res = await axios.get(`http://localhost:5093/api/Transaction?${from}${to}${descSearch}${categoryParams}&pageNumber=1&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -118,7 +136,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             loadPaginatedData();
         }, 1000)
         return () => clearTimeout(handler);
-    }, [dateRange, description]);
+    }, [dateRange, description, selectedCategoryIds]);
     
     const stats = useMemo(() => {
         // current date
@@ -185,6 +203,9 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             loading,
             dateRange,
             description,
+            categories,
+            selectedCategoryIds,
+            setSelectedCategoryIds,
             setDescription,
             setDateRange,
             refreshTransactions: loadInitialData,
