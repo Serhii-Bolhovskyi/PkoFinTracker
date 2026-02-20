@@ -12,7 +12,7 @@ export interface StatCardProps {
 
 }
 
-const CURRENCY_SYMBOLS: Record<string, string> = {
+export const CURRENCY_SYMBOLS: Record<string, string> = {
     'EUR': '€',
     'USD': '$',
     'UAH': '₴',
@@ -46,13 +46,15 @@ const StatCard: React.FC<StatCardProps> = ({title, amount, qty, diff, currency, 
                 </h3>
             </div>
 
-            <div className={`${page === 'transaction' ? 'flex-row-reverse justify-between' : ''} flex items-center start flex-wrap gap-1`}>
-                <div className={`flex font-bold text-lg space-x-1 ${isIncome ? 'text-emerald-500' : 'text-red-600'}`}>
-                    <span>{isPositive ? '↑' : '↓'} </span>
-                    <span>{diff?.toFixed(1)}%</span>
+            {page === 'dashboard' && (
+                <div className="flex items-center start flex-wrap gap-1">
+                    <div className={`flex font-bold text-lg space-x-1 ${isIncome ? 'text-emerald-500' : 'text-red-600'}`}>
+                        <span>{isPositive ? '↑' : '↓'} </span>
+                        <span>{diff?.toFixed(1)}%</span>
+                    </div>
+                    <span className="text-white opacity-60"> From last month</span>
                 </div>
-                <span className="text-white opacity-60"> From last month</span>
-            </div>
+            )}
         </div>
     )
 }

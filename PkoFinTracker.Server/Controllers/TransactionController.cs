@@ -20,14 +20,18 @@ public class TransactionController : ControllerBase
         [FromQuery]  DateTime? from, [FromQuery] DateTime? to,
         [FromQuery]  string? description,
         [FromQuery]  List<int>? categoryIds,
-        [FromQuery]  string? indicator)
+        [FromQuery]  string? indicator,
+        [FromQuery]  decimal? minAmount,
+        [FromQuery]  decimal? maxAmount)
     {
         var res = await _transactionService.GetAllTransactionAsync(
             limit,
             pageNumber, pageSize,
             from, to,
             description,
-            categoryIds, indicator);
+            categoryIds, 
+            indicator,
+            minAmount, maxAmount );
         return Ok(res);
     }
 

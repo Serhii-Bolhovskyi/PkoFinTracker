@@ -13,6 +13,12 @@ interface TransactionStats {
     countDiff: number;
 }
 
+interface TransactionFilterStats {
+    filteredCount: number,
+    filteredIncome: number,
+    filteredExpense: number,
+}
+
 interface PaginatedData {
     items: Transaction[],
     totalCount: number;
@@ -27,9 +33,11 @@ export interface Category {
 
 interface TransactionContext {
     allTransactions: Transaction[],
+    filteredTransactions: Transaction[];
     paginatedData: PaginatedData,
     accounts: BankAccount[],
     stats: TransactionStats,
+    filterStats: TransactionFilterStats,
     loading: boolean,
     refreshTransactions: () => Promise<void>// refresh data - delete
     goToPage: (page: number) => Promise<void>;
@@ -46,12 +54,16 @@ interface TransactionContext {
     
     indicator: string | null;
     setIndicator: (indicator: string | null) => void;
+
+    amountRange: [number | null, number | null];
+    setAmountRange: (range: [number | null, number | null]) => void;
 }
 
 const TransactionContext = createContext<TransactionContext | null>(null);
 
 export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
     const [allTransactions, setAllTransactions] = React.useState<Transaction[]>([]);
+    const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
     const [accounts, setAccounts] = React.useState<BankAccount[]>([]);
     const [loading, setLoading] = useState(true)
 
@@ -69,6 +81,27 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const [selectedCategoryIds, setSelectedCategoryIds] = React.useState<number[]>([]);
     
     const [indicator, setIndicator] = React.useState<string | null>("");
+    
+    const [amountRange, setAmountRange] = React.useState<[number | null, number | null]>([null, null])
+    
+    const getFilterParams = () => {
+        const [minAmount, maxAmount] = amountRange || [null, null]
+        const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
+        const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
+
+        const descSearch = description! && `&description=${description}`;
+
+        const categoryParams = selectedCategoryIds && selectedCategoryIds.length > 0
+            ? selectedCategoryIds.map(id => `&categoryIds=${id}`).join('')
+            : "";
+
+        const indicatorParams = indicator ? `&indicator=${indicator}` : "";
+
+        const minParam = (minAmount !== null && minAmount > 0) ? `&minAmount=${minAmount}` : "";
+        const maxParam = (maxAmount !== null && maxAmount > 0) ? `&maxAmount=${maxAmount}` : "";
+        
+        return `${from}${to}${descSearch}${categoryParams}${indicatorParams}${minParam}${maxParam}`
+    } 
     
     const loadInitialData = async () => {
         setLoading(true)
@@ -91,18 +124,10 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const loadPaginatedData = async() => {
         try{
             setLoading(true)
-            const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
-            const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
-
-            const descSearch = description! && `&description=${description}`;
-
-            const categoryParams = selectedCategoryIds && selectedCategoryIds.length > 0
-                ? selectedCategoryIds.map(id => `&categoryIds=${id}`).join('')
-                : "";
+            const filterParams = getFilterParams();
             
-            const indicatorParams = indicator ? `&indicator=${indicator}` : "";
-            
-            const res = await axios.get(`http://localhost:5093/api/Transaction?${from}${to}${descSearch}${categoryParams}${indicatorParams}&pageNumber=1&pageSize=10`);
+            const res = await axios.get(
+                `http://localhost:5093/api/Transaction?${filterParams}&pageNumber=1&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -117,10 +142,11 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const goToPage = async (pageNumber: number) => {
         setLoading(true)
         try {
-            const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
-            const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
+            const filterParams = getFilterParams();
+            // const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
+            // const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
             const res = await axios.get(
-                `http://localhost:5093/api/Transaction/?${from}${to}&pageNumber=${pageNumber}&pageSize=10`);
+                `http://localhost:5093/api/Transaction/?${filterParams}&pageNumber=${pageNumber}&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -132,6 +158,15 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             setLoading(false);
         }
     }
+    
+    const fetchFiteredTransactions = async () => {
+        const filterParams = getFilterParams();
+        const res = await axios.get(
+            `http://localhost:5093/api/Transaction/?${filterParams}&pageSize=1000`);
+
+        setFilteredTransactions(res.data.items);
+    }
+    
 
     useEffect(() => {
         loadInitialData();
@@ -141,9 +176,10 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     useEffect(() => {
         const handler = setTimeout(() => {
             loadPaginatedData();
+            fetchFiteredTransactions();
         }, 1000)
         return () => clearTimeout(handler);
-    }, [dateRange, description, selectedCategoryIds ,indicator]);
+    }, [dateRange, description, selectedCategoryIds, indicator, amountRange]);
     
     const stats = useMemo(() => {
         // current date
@@ -160,7 +196,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
                 const tDate = new Date(t.bookingDate);
                 const tMonth = tDate.getMonth();
                 const tYear = tDate.getFullYear();
-
+                
                 // current month
                 if(tMonth === currMonth && tYear === currYear){
                     acc.currCount += 1;
@@ -183,7 +219,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
 
                 return acc;
             },
-            { currInc: 0, currExp: 0, prevInc: 0, prevExp: 0, currCount: 0, prevCount: 0 },
+            { totalFilteredInc: 0, totalFilteredExp: 0, totalFilteredCount: 0,
+                currInc: 0, currExp: 0, prevInc: 0, prevExp: 0, currCount: 0, prevCount: 0 },
         );
 
         const calcDiff = (curr: number, prev: number) =>
@@ -200,10 +237,21 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             countDiff: countDiff
         }
     }, [allTransactions]);
+
+    const filterStats = useMemo(() => {
+        return filteredTransactions.reduce((acc, t) => {
+            acc.filteredCount += 1;
+            if (t.indicator === 'CRDT') acc.filteredIncome += t.amount;
+            else acc.filteredExpense += Math.abs(t.amount);
+            return acc;
+        }, { filteredIncome: 0, filteredExpense: 0, filteredCount: 0 });
+    }, [filteredTransactions]);
     
     return (
         <TransactionContext.Provider value={{
             allTransactions,
+            filteredTransactions,
+            filterStats,
             paginatedData,
             accounts,
             stats,
@@ -211,8 +259,10 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             dateRange,
             description,
             categories,
-            indicator,
             selectedCategoryIds,
+            indicator,
+            amountRange,
+            setAmountRange,
             setIndicator,
             setSelectedCategoryIds,
             setDescription,

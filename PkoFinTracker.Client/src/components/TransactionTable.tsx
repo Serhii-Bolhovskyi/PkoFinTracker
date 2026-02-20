@@ -196,25 +196,37 @@ interface FilterModalProps {
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
-    const {selectedCategoryIds, indicator, setIndicator, setSelectedCategoryIds} = useTransactions();
+    const {selectedCategoryIds, indicator, amountRange, setAmountRange, setIndicator, setSelectedCategoryIds} = useTransactions();
     const [tempIds, setTempIds] = useState<number[]>(selectedCategoryIds);
     const [tempIndicator, setTempIndicator] = useState<string>(indicator || "");
+    const [tempAmount, setTempAmount] = useState<[number | null, number | null]>(amountRange);
     
     const toggleCategory = (id: number) => {
         setTempIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     }
     
+    const handleMinChange = (value: string) => {
+        const num = value === "" ? null : Number(value);
+        setTempAmount([num, tempAmount[1]]);
+    }
+    const handleMaxChange = (value: string) => {
+        const num = value === "" ? null : Number(value);
+        setTempAmount([tempAmount[0], num]);
+    }
+    
+    
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        setSelectedCategoryIds(tempIds)
-        setIndicator(tempIndicator)
-        onClose()
+        e.preventDefault();
+        setSelectedCategoryIds(tempIds);
+        setIndicator(tempIndicator);
+        setAmountRange(tempAmount);
+        onClose();
     }
     
     return(
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-30 flex items-center justify-center">
             <form onSubmit={handleSubmit} className="relative w-120 p-6 rounded-2xl bg-bank-comp shadow-2xl border border-white/10 z-50">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex py-4 items-center gap-3">
                     <div className="h-px w-full bg-white/30"></div>
                     <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Category</h1>
                     <div className="h-px w-full bg-white/30"></div>
@@ -239,7 +251,7 @@ const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
                     })}
                 </div>
                 
-                <div className="flex py-2 items-center gap-3 mb-4">
+                <div className="flex py-4 items-center gap-3">
                     <div className="h-px w-full bg-white/30"></div>
                     <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Transaction type</h1>
                     <div className="h-px w-full bg-white/30"></div>
@@ -266,6 +278,29 @@ const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
                         )
                     })}
                 </div>
+
+                <div className="flex py-4 items-center gap-3">
+                    <div className="h-px w-full bg-white/30"></div>
+                    <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Amount</h1>
+                    <div className="h-px w-full bg-white/30"></div>
+                </div>
+
+                <div className="flex items-center gap-4 justify-between text-white/70 text-sm leading-relaxed">
+                    <input
+                        className="w-1/2 p-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors outline-none"
+                        placeholder="Min"
+                        type="number"
+                        value={tempAmount[0] ?? ""}
+                        onChange={(e) => handleMinChange(e.target.value)}
+                    />
+                    <input
+                        className="w-1/2 p-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors outline-none"
+                        placeholder="Max"
+                        type="number"
+                        value={tempAmount[1] ?? ""}
+                        onChange={(e) => handleMaxChange(e.target.value)}
+                    />
+                </div>
                 
                 <div className="flex gap-4 mt-4">
                     <button
@@ -275,6 +310,8 @@ const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
                             setTempIds([])
                             setIndicator("")
                             setTempIndicator("")
+                            setTempAmount([null, null])
+                            setAmountRange([null, null])
                             onClose()
                         }}
                         className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/5 transition"

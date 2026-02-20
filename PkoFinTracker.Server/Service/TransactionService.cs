@@ -93,7 +93,9 @@ public class TransactionService
         DateTime? from = null,  DateTime? to = null,
         string? description = null,
         List<int>? categoryIds = null,
-        string? indicator = null
+        string? indicator = null,
+        decimal? minAmount = null,
+        decimal? maxAmount = null
         )
     {
         var query = _context.Transactions
@@ -126,6 +128,11 @@ public class TransactionService
         {
             query = query.Where(t => t.Indicator.ToLower().Contains(indicator.ToLower()));
         }
+        
+        if(minAmount.HasValue)
+            query = query.Where(t => t.Amount >= minAmount.Value);
+        if(maxAmount.HasValue)
+            query = query.Where(t => t.Amount <= maxAmount.Value);
         
         var totalCount = await query.CountAsync(); 
 

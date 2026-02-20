@@ -4,19 +4,29 @@ import StatCard from "../components/StatCard.tsx";
 import { BanknoteArrowDown, BanknoteArrowUp, WalletCards } from 'lucide-react';
 import TransactionTable from "../components/TransactionTable.tsx";
 
+import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from 'recharts';
+
+import {useMemo} from "react";
+
 const Transactions: React.FC = () => {
-    const {paginatedData, goToPage ,stats, accounts} = useTransactions();
-
-
-    // const currMonth = new Date().getMonth();
-    // const currYear = new Date().getFullYear();
-    //
-    // const currMonthTransactions = paginatedData.items.filter(t => {
-    //     const tDate = new Date(t.bookingDate);
-    //     return tDate.getMonth() === currMonth && tDate.getFullYear() === currYear;
-    // });
-
-    // console.log(currMonthTransactions);
+    const {paginatedData, filteredTransactions, goToPage, filterStats, accounts} = useTransactions();
+    
+    const pieData = useMemo(() => {
+        const categoryMap: Record<string, number> = {};
+        
+        filteredTransactions.forEach(t => {
+            if(t.indicator === 'DBIT'){
+                const name = t.categoryName || "Other";
+                categoryMap[name] = (categoryMap[name] || 0) + Math.abs(t.amount);
+            }
+        });
+        
+        const data = Object.entries(categoryMap).map(([name, value]) => ({
+            name,
+            value: parseFloat(value.toFixed(2))
+        }))
+        return data.sort((a, b) => b.value - a.value).slice(0, 5);
+    }, [filteredTransactions]);
     
     return (
         <div className="grid grid-cols-12 gap-3">
@@ -25,8 +35,8 @@ const Transactions: React.FC = () => {
                     <div className="col-span-3">
                         <StatCard
                             title="Total Transactions"
-                            qty={stats.totalCount}
-                            diff={stats.countDiff} currency={accounts[0].currency}
+                            qty={filterStats.filteredCount}
+                            currency={accounts[0].currency}
                             type='info'
                             page='transaction'
                             icon={<WalletCards className="w-6 h-6"/>}/>
@@ -34,8 +44,8 @@ const Transactions: React.FC = () => {
                     <div className="col-span-3">
                         <StatCard
                             title="Total Income"
-                            amount={stats.totalIncome}
-                            diff={stats.incomeDiff} currency={accounts[0].currency}
+                            amount={filterStats.filteredIncome}
+                            currency={accounts[0].currency}
                             type='income'
                             page='transaction'
                             icon={<BanknoteArrowDown className="w-6 h-6"/>}/>
@@ -43,20 +53,17 @@ const Transactions: React.FC = () => {
                     <div className="col-span-3">
                         <StatCard
                             title="Total Expense"
-                            amount={stats.totalExpense}
-                            diff={stats.expenseDiff} currency={accounts[0].currency}
+                            amount={filterStats.filteredExpense}
+                            currency={accounts[0].currency}
                             type='expense'
                             page='transaction'
                             icon={<BanknoteArrowUp className="w-6 h-6"/>}/>
                     </div>
-                    <div className="col-span-3">
-                        <StatCard
-                            title="Total Expense"
-                            amount={stats.totalExpense}
-                            diff={stats.expenseDiff} currency={accounts[0].currency}
-                            type='expense'
-                            page='transaction'
-                            icon={<BanknoteArrowUp className="w-6 h-6"/>}/>
+                    <div className="col-span-3 row-span-9">
+                        <div className="bg-bank-comp p-7 rounded-2xl">
+                            <p className="text-white text-center text-xl">Top Spending Categories</p>
+                            <PieChartWithPaddingAngle data={pieData}/>
+                        </div>
                     </div>
                 </>
             }
@@ -72,6 +79,63 @@ const Transactions: React.FC = () => {
             </div>
         </div>
     )
+}
+
+interface PieChartProps {
+    data: any[]; // Твій масив [{name, value}]
+    isAnimationActive?: boolean;
+}
+
+const COLORS = [
+    '#E9D5FF', // purple-200
+    '#D8B4FE', // purple-300
+    '#C084FC', // purple-400
+    '#A855F7', // purple-500 (основний)
+    '#9333EA', // purple-600
+    '#7E22CE'  // purple-700
+];
+
+function PieChartWithPaddingAngle({ data, isAnimationActive = true }: PieChartProps) {
+    return (
+        <div className="h-90 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <Pie
+                        data={data}
+                        /* 2. Центруємо і трохи зменшуємо зовнішній радіус */
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="50%"
+                        outerRadius="90%"
+                        cornerRadius={6}
+                        paddingAngle={2}
+                        dataKey="value"
+                        isAnimationActive={isAnimationActive}
+                        stroke="none"
+                    >
+                        {data.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Pie>
+
+                    <Tooltip
+                        contentStyle={{ backgroundColor: '#1C1A2E', border: 'none', borderRadius: '12px', color: '#fff' }}
+                        itemStyle={{ color: '#fff' }}
+                        formatter={(value) => <span className="flex flex-col text-gray-400 text-base text-left">€{value}</span>}
+                    />
+                    <Legend
+                        className="flex items-center gap-5"
+                        verticalAlign="bottom"
+                        align="center"
+                        iconType="circle"
+                        iconSize={10}
+                        wrapperStyle={{ marginTop: "20px" }}
+                        formatter={(value) => <span className="text-gray-400 text-base text-left">{value}</span>}
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
+    );
 }
 
 export default Transactions
