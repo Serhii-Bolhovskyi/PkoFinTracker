@@ -29,7 +29,7 @@ const CalendarTrigger = forwardRef<HTMLButtonElement, CalendarTriggerProps>(
         <button
             ref={ref}
             onClick={onClick}
-            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
         >
             <CalendarDays className="w-6 h-6" />
         </button>
@@ -70,7 +70,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                                 calendarClassName="dark-calendar"
                                 customInput={<CalendarTrigger />}
                             />
-                            <div className="relative p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                            <div className="relative p-2 ml-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
                                 <SlidersHorizontal
                                     onClick={() => setIsOpen(!isOpen)}
                                     className="w-6 h-6" 

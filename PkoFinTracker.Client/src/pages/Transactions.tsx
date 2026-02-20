@@ -4,9 +4,17 @@ import StatCard from "../components/StatCard.tsx";
 import { BanknoteArrowDown, BanknoteArrowUp, WalletCards } from 'lucide-react';
 import TransactionTable from "../components/TransactionTable.tsx";
 
-import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from 'recharts';
+import {Cell, Pie, PieChart, ResponsiveContainer, Tooltip} from 'recharts';
 
 import {useMemo} from "react";
+
+const COLORS = [
+    '#7E22CE',
+    '#9333EA',
+    '#A855F7',
+    '#C084FC',
+    '#D8B4FE'
+];
 
 const Transactions: React.FC = () => {
     const {paginatedData, filteredTransactions, goToPage, filterStats, accounts} = useTransactions();
@@ -27,6 +35,7 @@ const Transactions: React.FC = () => {
         }))
         return data.sort((a, b) => b.value - a.value).slice(0, 5);
     }, [filteredTransactions]);
+
     
     return (
         <div className="grid grid-cols-12 gap-3">
@@ -59,11 +68,21 @@ const Transactions: React.FC = () => {
                             page='transaction'
                             icon={<BanknoteArrowUp className="w-6 h-6"/>}/>
                     </div>
-                    <div className="col-span-3 row-span-9">
-                        <div className="bg-bank-comp p-7 rounded-2xl">
+                    <div className="col-span-3 row-span-9 bg-bank-comp p-7 rounded-2xl">
+                        <div className="">
                             <p className="text-white text-center text-xl">Top Spending Categories</p>
                             <PieChartWithPaddingAngle data={pieData}/>
                         </div>
+                        <div className="flex flex-1 flex-wrap items-center justify-center space-x-2">
+                            {pieData.map((d, index) => (
+                                <div key={d.name} className="flex items-center gap-1">
+                                    <div className="w-4 h-4 border bg-red-100 rounded-full"
+                                         style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                    <span className="text-white text-sm">{d.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                        
                     </div>
                 </>
             }
@@ -86,23 +105,13 @@ interface PieChartProps {
     isAnimationActive?: boolean;
 }
 
-const COLORS = [
-    '#E9D5FF', // purple-200
-    '#D8B4FE', // purple-300
-    '#C084FC', // purple-400
-    '#A855F7', // purple-500 (основний)
-    '#9333EA', // purple-600
-    '#7E22CE'  // purple-700
-];
-
 function PieChartWithPaddingAngle({ data, isAnimationActive = true }: PieChartProps) {
     return (
-        <div className="h-90 w-full">
+        <div className="h-60 w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                     <Pie
                         data={data}
-                        /* 2. Центруємо і трохи зменшуємо зовнішній радіус */
                         cx="50%"
                         cy="50%"
                         innerRadius="50%"
@@ -122,15 +131,6 @@ function PieChartWithPaddingAngle({ data, isAnimationActive = true }: PieChartPr
                         contentStyle={{ backgroundColor: '#1C1A2E', border: 'none', borderRadius: '12px', color: '#fff' }}
                         itemStyle={{ color: '#fff' }}
                         formatter={(value) => <span className="flex flex-col text-gray-400 text-base text-left">€{value}</span>}
-                    />
-                    <Legend
-                        className="flex items-center gap-5"
-                        verticalAlign="bottom"
-                        align="center"
-                        iconType="circle"
-                        iconSize={10}
-                        wrapperStyle={{ marginTop: "20px" }}
-                        formatter={(value) => <span className="text-gray-400 text-base text-left">{value}</span>}
                     />
                 </PieChart>
             </ResponsiveContainer>

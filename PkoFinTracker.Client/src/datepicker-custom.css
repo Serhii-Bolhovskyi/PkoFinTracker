@@ -69,7 +69,7 @@
 
 .react-datepicker__day-name {
     color: #8e8e93 !important;
-    font-size: 0.75rem !important;
+    font-size: 1rem !important;
     font-weight: 500 !important;
     width: 2.25rem !important;
     height: 2.25rem !important;
@@ -92,7 +92,7 @@
 /* Base day style */
 .react-datepicker__day {
     color: #ffffff !important;
-    font-size: 0.875rem !important;
+    font-size: 1rem !important;
     width: 2.25rem !important;
     height: 2.25rem !important;
     line-height: 2.25rem !important;
@@ -112,7 +112,6 @@
 
 /* Today */
 .react-datepicker__day--today {
-    border: 1px solid #ffffff !important;
     background-color: transparent !important;
     font-weight: normal !important;
 }
@@ -145,7 +144,7 @@
 
 /* Keyboard-selected day */
 .react-datepicker__day--keyboard-selected {
-    background-color: #4da6ff !important;
+    background-color: hsl(269, 59%, 47%) !important;
     color: #ffffff !important;
     border-radius: 50% !important;
 }
