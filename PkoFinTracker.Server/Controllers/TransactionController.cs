@@ -22,7 +22,8 @@ public class TransactionController : ControllerBase
         [FromQuery]  List<int>? categoryIds,
         [FromQuery]  string? indicator,
         [FromQuery]  decimal? minAmount,
-        [FromQuery]  decimal? maxAmount)
+        [FromQuery]  decimal? maxAmount,
+        [FromQuery] string? status)
     {
         var res = await _transactionService.GetAllTransactionAsync(
             limit,
@@ -31,7 +32,8 @@ public class TransactionController : ControllerBase
             description,
             categoryIds, 
             indicator,
-            minAmount, maxAmount );
+            minAmount, maxAmount,
+            status);
         return Ok(res);
     }
 

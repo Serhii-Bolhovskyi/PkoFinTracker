@@ -95,7 +95,8 @@ public class TransactionService
         List<int>? categoryIds = null,
         string? indicator = null,
         decimal? minAmount = null,
-        decimal? maxAmount = null
+        decimal? maxAmount = null,
+        string? status = null
         )
     {
         var query = _context.Transactions
@@ -134,6 +135,11 @@ public class TransactionService
         if(maxAmount.HasValue)
             query = query.Where(t => t.Amount <= maxAmount.Value);
         
+        if (!string.IsNullOrEmpty(status))
+        {
+            query = query.Where(t => t.Status.ToLower().Contains(status.ToLower()));
+        }
+        
         var totalCount = await query.CountAsync(); 
 
         int page = pageNumber ?? 1;
@@ -158,6 +164,7 @@ public class TransactionService
                 BookingDate = t.BookingDate,
                 CategoryName = t.Category != null ? t.Category.Name : "Other",
                 Indicator = t.Indicator,
+                Status = t.Status,
             }).ToListAsync();
 
         return new TransactionPaginatedDto

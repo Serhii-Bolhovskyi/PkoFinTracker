@@ -9,4 +9,5 @@ public class TransactionDisplayDto
     public DateTime BookingDate{ get; set; }
     public string CategoryName { get; set; }
     public string Indicator { get; set; }
+    public string Status { get; set; }
 }
