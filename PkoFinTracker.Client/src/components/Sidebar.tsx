@@ -14,7 +14,7 @@ interface MenuItem {
 
 const Sidebar: React.FC = () => {
     const menuItems: MenuItem[] = [
-        {icon: <LayoutDashboard className="w-5 h-5" />, label: "Dashboard", path: "/dashboard", active: true },
+        {icon: <LayoutDashboard className="w-5 h-5" />, label: "Dashboard", path: "/", active: true },
         {icon: <ArrowLeftRight className="w-5 h-5" />, label: "Transactions", path: "/transactions"}
     ]
     return (

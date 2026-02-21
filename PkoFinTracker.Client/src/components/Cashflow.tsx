@@ -18,11 +18,13 @@ const Cashflow: React.FC<TransactionProps> = ({transactions}) => {
         transactions.forEach(t => {
             const date = new Date(t.bookingDate)
 
+            const isIgnored = t.status !== 'RJCT' && t.status !== 'PDNG';
+
             const monthIndex = date.getMonth();
 
-            if(t.indicator === "CRDT"){
+            if(t.indicator === "CRDT" && isIgnored) {
                 data[monthIndex].income += t.amount;
-            } else {
+            } else if(t.indicator === "DBIT" && isIgnored) {
                 data[monthIndex].expense += Math.abs(t.amount);
             }
         })
@@ -31,7 +33,6 @@ const Cashflow: React.FC<TransactionProps> = ({transactions}) => {
 
     return (
         <div className="col-span-8 row-span-2 col-start-5 bg-bank-comp rounded-2xl p-5">
-            {/*<p className="text-2xl text-white">Cashflow</p>*/}
             <MixBarChart data={chartData} />
         </div>
 
@@ -107,34 +108,5 @@ const MixBarChart: React.FC<{ data: any }> = ({ data }) => {
         </div>
     );
 };
-
-// class SimpleBarChart extends React.Component<{ data: any }> {
-//     render() {
-//         let {data} = this.props;
-//         return (
-//             <BarChart
-//                 style={{width: '100%', maxHeight: '45vh', aspectRatio: 1.618}}
-//                 responsive
-//                 data={data}
-//                 margin={{
-//                     top: 5,
-//                     right: 0,
-//                     left: 0,
-//                     bottom: 5,
-//                 }}
-//             >
-//                 <CartesianGrid strokeDasharray="3 3"/>
-//                 <XAxis dataKey="name"/>
-//                 <YAxis width="auto"/>
-//                 <Tooltip/>
-//                 <Legend/>
-//                 <Bar name="Income" dataKey="income" fill="#A855F7" radius={[4, 4, 0, 0]}/>
-//                 <Bar name="Expense" dataKey="expense" fill="#DAA520" radius={[4, 4, 0, 0]}
-//                 />
-//                 <RechartsDevtools/>
-//             </BarChart>
-//         );
-//     }
-// }
 
 export default Cashflow;

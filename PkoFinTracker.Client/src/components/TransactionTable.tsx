@@ -1,15 +1,16 @@
 import * as React from "react";
 import type {Transaction} from "../types/Transaction.ts";
 import {EllipsisVertical, SquareChevronLeft, SquareChevronRight, CalendarDays, SlidersHorizontal} from 'lucide-react';
-import {type Category, useTransactions} from "../context/TransactionContext.tsx";
+import {useTransactions} from "../context/TransactionContext.tsx";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "../datepicker-custom.css"
 import DatePicker from "react-datepicker";
-import {forwardRef, useState} from "react";
+import {forwardRef} from "react";
 
 import notFoundImg from "../assets/not-found.png"
 import Skeleton from "react-loading-skeleton";
+import FilterModal from "./modal/FilterModal.tsx";
 
 export interface TransactionProps {
     transactions: Transaction[];
@@ -90,7 +91,8 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                         <th>Transaction</th>
                         <th>Category</th>
                         <th>Date Time</th>
-                        <th className="pr-0">Cost</th>
+                        <th>Cost</th>
+                        <th className="pr-0">Status</th>
                         {pageType === 'transactions' && <th></th>}
                     </tr>
                     </thead>
@@ -98,7 +100,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                     {isLoading ? (
                         Array.from({ length: 10 }).map((_, i) => (
                             <tr key={i}>
-                                <td colSpan={pageType === 'transactions' ? 7 : 6} className="py-2 px-4">
+                                <td colSpan={pageType === 'transactions' ? 8 : 7} className="py-2 px-4">
                                     <Skeleton height={28} className="w-full rounded-lg" />
                                 </td>
                             </tr>
@@ -129,13 +131,13 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                                             >
                                                 {t.description?.charAt(0).toUpperCase() || 'T'}
                                             </div>
-                                            <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
+                                            <div className="w-24 overflow-x-auto whitespace-nowrap scrollbar-none">
                                                 {t.description}
                                             </div>
                                         </div>
                                     </td>
                                     <td className="">
-                                        <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
+                                        <div className="w-24 overflow-x-auto whitespace-nowrap scrollbar-none">
                                             {t.categoryName}
                                         </div>
                                     </td>
@@ -151,18 +153,36 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                                     <td className={`whitespace-nowrap ${t.indicator === "DBIT" ? 'text-red-600' : 'text-emerald-600'} pr-2`}>
                                         {t.indicator === 'DBIT' ? '-' : '+'}{t.amount} {t.currency}
                                     </td>
-                                    {pageType === 'transactions' && <td>
+                                    <td>
+                                        <div className={`whitespace-nowrap px-2 p-1 rounded-full flex justify-center
+                                        ${t.status === "BOOK" ? 'bg-emerald-600/20  text-emerald-600' : ''}
+                                        ${t.status === "PDNG" ? 'bg-yellow-600/20  text-yellow-600' : ''}
+                                        ${t.status === "RJCT" ? 'bg-red-600/20  text-red-600' : ''}`}>
+                                            {t.status === "BOOK" ? "Success" : t.status === "PDNG" ? "Pending" : t.status === "RJCT" ? "Rejected" : ""}
+                                        </div>
+                                        
+                                    </td>
+                                    {pageType === 'transactions' && <td className="px-1">
                                         <EllipsisVertical className="cursor-pointer"/>
                                     </td>}
                                 </tr>
                             ))
                     )}
                     {!isLoading && transactions.length === 0 && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                            <p className={`${pageType === "transactions" ? "text-3xl" : "text-2xl"} text-gray-400`} >There are no transactions</p>
-                            <img src={notFoundImg} alt="empty state"
-                                 className={`${pageType === "transactions" ? "w-60 h-60" : "w-40 h-40"} bg-transparent object-contain opacity-70`} />
-                        </div>
+                        <tr>
+                            <td colSpan={pageType === 'transactions' ? 8 : 7} className="relative py-20">
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                    <p className={`${pageType === "transactions" ? "text-3xl" : "text-2xl"} text-gray-400`}>
+                                        There are no transactions
+                                    </p>
+                                    <img
+                                        src={notFoundImg}
+                                        alt="empty state"
+                                        className={`${pageType === "transactions" ? "w-60 h-60" : "w-40 h-40"} opacity-70`}
+                                    />
+                                </div>
+                            </td>
+                        </tr>
                     )}
                     </tbody>
                 </table>
@@ -201,146 +221,6 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                 </div>}
             {isOpen && <FilterModal categories={categories} onClose={onClose}/>}
         </>
-    )
-}
-
-interface FilterModalProps {
-    categories: Category[];
-    onClose: () => void;
-}
-
-const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
-    const {selectedCategoryIds, indicator, amountRange, setAmountRange, setIndicator, setSelectedCategoryIds} = useTransactions();
-    const [tempIds, setTempIds] = useState<number[]>(selectedCategoryIds);
-    const [tempIndicator, setTempIndicator] = useState<string>(indicator || "");
-    const [tempAmount, setTempAmount] = useState<[number | null, number | null]>(amountRange);
-    
-    const toggleCategory = (id: number) => {
-        setTempIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-    }
-    
-    const handleMinChange = (value: string) => {
-        const num = value === "" ? null : Number(value);
-        setTempAmount([num, tempAmount[1]]);
-    }
-    const handleMaxChange = (value: string) => {
-        const num = value === "" ? null : Number(value);
-        setTempAmount([tempAmount[0], num]);
-    }
-    
-    
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setSelectedCategoryIds(tempIds);
-        setIndicator(tempIndicator);
-        setAmountRange(tempAmount);
-        onClose();
-    }
-    
-    return(
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-30 flex items-center justify-center">
-            <form onSubmit={handleSubmit} className="relative w-120 p-6 rounded-2xl bg-bank-comp shadow-2xl border border-white/10 z-50">
-                <div className="flex py-4 items-center gap-3">
-                    <div className="h-px w-full bg-white/30"></div>
-                    <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Category</h1>
-                    <div className="h-px w-full bg-white/30"></div>
-                </div>
-                
-                <div className="max-h-40 overflow-y-auto flex gap-3 flex-wrap text-white/70 text-sm leading-relaxed">
-                    {categories.map((category) => {
-                        const isSelected = tempIds.includes(category.id);
-                        return (
-                            <button
-                                type="button"
-                                key={category.id}
-                                onClick={() => toggleCategory(category.id)}
-                                className={`px-4 py-2 rounded-xl border transition-all duration-200 text-sm
-                                    ${isSelected
-                                    ? 'border-purple-500 bg-purple-500/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]'
-                                    : 'border-white/10 text-white/60 hover:border-white/30 hover:bg-white/5'
-                                }`}>
-                                {category.name}
-                            </button>
-                        )
-                    })}
-                </div>
-                
-                <div className="flex py-4 items-center gap-3">
-                    <div className="h-px w-full bg-white/30"></div>
-                    <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Transaction type</h1>
-                    <div className="h-px w-full bg-white/30"></div>
-                </div>
-
-                <div className="flex gap-3 text-white/70 text-sm leading-relaxed">
-                    {[
-                        {label: 'All', value: ""},
-                        {label: 'Income', value: 'CRDT'},
-                        {label: 'Expense', value: "DBIT"}
-                    ].map((type) => {
-                        return (
-                            <button
-                                type="button"
-                                key={type.value}
-                                onClick={() => setTempIndicator(type.value)}
-                                className={`px-4 py-2 rounded-xl border transition-all duration-200 text-sm
-                                    ${tempIndicator === type.value
-                                    ? 'border-purple-500 bg-purple-500/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]'
-                                    : 'border-white/10 text-white/60 hover:border-white/30 hover:bg-white/5'
-                                }`}>
-                                {type.label}
-                            </button>
-                        )
-                    })}
-                </div>
-
-                <div className="flex py-4 items-center gap-3">
-                    <div className="h-px w-full bg-white/30"></div>
-                    <h1 className="text-2xl font-semibold whitespace-nowrap tracking-wide">Amount</h1>
-                    <div className="h-px w-full bg-white/30"></div>
-                </div>
-
-                <div className="flex items-center gap-4 justify-between text-white/70 text-sm leading-relaxed">
-                    <input
-                        className="w-1/2 p-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors outline-none"
-                        placeholder="Min"
-                        type="number"
-                        value={tempAmount[0] ?? ""}
-                        onChange={(e) => handleMinChange(e.target.value)}
-                    />
-                    <input
-                        className="w-1/2 p-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors outline-none"
-                        placeholder="Max"
-                        type="number"
-                        value={tempAmount[1] ?? ""}
-                        onChange={(e) => handleMaxChange(e.target.value)}
-                    />
-                </div>
-                
-                <div className="flex gap-4 mt-4">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setSelectedCategoryIds([])
-                            setTempIds([])
-                            setIndicator("")
-                            setTempIndicator("")
-                            setTempAmount([null, null])
-                            setAmountRange([null, null])
-                            onClose()
-                        }}
-                        className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/5 transition"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className="flex-1 px-4 py-3 rounded-xl bg-bank-purple text-white font-bold hover:bg-purple-500 shadow-lg shadow-purple-600/20 transition"
-                    >
-                        Apply
-                    </button>
-                </div>
-            </form>
-        </div>
     )
 }
 

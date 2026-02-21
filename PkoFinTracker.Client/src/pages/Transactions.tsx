@@ -91,17 +91,17 @@ const Transactions: React.FC = () => {
                             )}
                         </div>
                         
-                        <div className="flex flex-wrap items-center justify-center gap-3  mt-4">
+                        <div className="flex h-20 flex-wrap items-center justify-center gap-2  mt-4">
                             {loading ? (
-                                Array.from({ length: 8 }).map((_, i) => (
+                                Array.from({ length: 6 }).map((_, i) => (
                                     <div key={i} className="flex items-center gap-2">
-                                        <Skeleton circle width={12} height={12} />
-                                        <Skeleton width={60} height={12} />
+                                        <Skeleton circle width={12} height={10} />
+                                        <Skeleton width={60} height={10} />
                                     </div>
                                 ))
                             ) : (
                                 pieData.map((d, index) => (
-                                    <div key={d.name} className="flex items-center gap-2">
+                                    <div key={d.name} className="flex items-center gap-1">
                                         <div
                                             className="w-3 h-3 rounded-full border border-white/10"
                                             style={{ backgroundColor: COLORS[index % COLORS.length] }}

@@ -28,7 +28,7 @@ const AccountCard: React.FC<AccountCardProps> = ({accounts, isLoading}) => {
             'UAH': '₴',
             'GBP': '£',
             'PLN': 'zł'
-        };
+    };
 
     const symbol = currencySymbols[currency] || currency;
         

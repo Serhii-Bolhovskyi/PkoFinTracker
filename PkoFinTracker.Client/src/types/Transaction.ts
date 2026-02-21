@@ -6,4 +6,5 @@ export interface Transaction {
     bookingDate: string;
     categoryName: string;
     indicator: string;
+    status: string;
 }

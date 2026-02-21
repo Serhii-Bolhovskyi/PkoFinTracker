@@ -35,9 +35,12 @@ interface TransactionContext {
     allTransactions: Transaction[],
     filteredTransactions: Transaction[];
     paginatedData: PaginatedData,
+    
     accounts: BankAccount[],
+    
     stats: TransactionStats,
     filterStats: TransactionFilterStats,
+    
     loading: boolean,
  
     goToPage: (page: number) => Promise<void>;
@@ -57,6 +60,9 @@ interface TransactionContext {
 
     amountRange: [number | null, number | null];
     setAmountRange: (range: [number | null, number | null]) => void;
+    
+    status: string | null;
+    setStatus: (status: string | null) => void;
 }
 
 const TransactionContext = createContext<TransactionContext | null>(null);
@@ -89,6 +95,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     
     const [amountRange, setAmountRange] = React.useState<[number | null, number | null]>([null, null])
     
+    const [status, setStatus] = React.useState<string | null>("")
+    
     const getFilterParams = () => {
         const [minAmount, maxAmount] = amountRange || [null, null]
         const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
@@ -102,14 +110,14 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         const minParam = (minAmount !== null && minAmount > 0) ? `&minAmount=${minAmount}` : "";
         const maxParam = (maxAmount !== null && maxAmount > 0) ? `&maxAmount=${maxAmount}` : "";
         
-        return `${from}${to}${descSearch}${categoryParams}${indicatorParams}${minParam}${maxParam}`
+        const statusParams = status ? `&status=${status}` : "";
+        
+        return `${from}${to}${descSearch}${categoryParams}${indicatorParams}${minParam}${maxParam}${statusParams}`
     } 
     
     const loadInitialData = async () => {
         setLoading(true)
         try{
-
-            await new Promise(resolve => setTimeout(resolve, 3000));
             
             const [transRes, accRes, catRes] = await Promise.all([
                 axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`),
@@ -129,10 +137,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const loadPaginatedData = async() => {
         try{
             setLoading(true)
-            
             const filterParams = getFilterParams();
-
-            await new Promise(resolve => setTimeout(resolve, 3000));
             
             const res = await axios.get(
                 `http://localhost:5093/api/Transaction?${filterParams}&pageNumber=1&pageSize=10`);
@@ -168,9 +173,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     
     const fetchFilteredTransactions = async () => {
         const filterParams = getFilterParams();
-
-        await new Promise(resolve => setTimeout(resolve, 3000));
-    
+        
         const res = await axios.get(
             `http://localhost:5093/api/Transaction/?${filterParams}&pageSize=1000`);
 
@@ -188,7 +191,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             fetchFilteredTransactions();
         }, 1000)
         return () => clearTimeout(handler);
-    }, [dateRange, description, selectedCategoryIds, indicator, amountRange]);
+    }, [dateRange, description, selectedCategoryIds, indicator, amountRange, status]);
     
     const stats = useMemo(() => {
         // current date
@@ -205,13 +208,15 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
                 const tDate = new Date(t.bookingDate);
                 const tMonth = tDate.getMonth();
                 const tYear = tDate.getFullYear();
+
+                const isIgnored = t.status !== 'RJCT' && t.status !== 'PDNG';
                 
                 // current month
                 if(tMonth === currMonth && tYear === currYear){
                     acc.currCount += 1;
-                    if (t.indicator === 'CRDT') {
+                    if (t.indicator === 'CRDT' && isIgnored) {
                         acc.currInc += t.amount;
-                    } else if (t.indicator === 'DBIT') {
+                    } else if (t.indicator === 'DBIT' && isIgnored) {
                         acc.currExp += t.amount;
                     }
                 }
@@ -219,9 +224,9 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
                 // prev month
                 if(tMonth === prevMonth && tYear === prevYear){
                     acc.prevCount += 1;
-                    if (t.indicator === 'CRDT') {
+                    if (t.indicator === 'CRDT' && isIgnored) {
                         acc.prevInc += t.amount;
-                    } else if (t.indicator === 'DBIT') {
+                    } else if (t.indicator === 'DBIT' && isIgnored) {
                         acc.prevExp += t.amount;
                     }
                 }
@@ -250,8 +255,15 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const filterStats = useMemo(() => {
         return filteredTransactions.reduce((acc, t) => {
             acc.filteredCount += 1;
-            if (t.indicator === 'CRDT') acc.filteredIncome += t.amount;
-            else acc.filteredExpense += Math.abs(t.amount);
+            
+            const isIgnored = t.status !== 'RJCT' && t.status !== 'PDNG';
+            
+            if (t.indicator === 'CRDT' && isIgnored){
+                acc.filteredIncome += t.amount;
+            } 
+            else if(t.indicator === 'DBIT' && isIgnored){
+                acc.filteredExpense += Math.abs(t.amount);  
+            } 
             return acc;
         }, { filteredIncome: 0, filteredExpense: 0, filteredCount: 0 });
     }, [filteredTransactions]);
@@ -271,6 +283,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             selectedCategoryIds,
             indicator,
             amountRange,
+            status,
+            setStatus,
             setAmountRange,
             setIndicator,
             setSelectedCategoryIds,

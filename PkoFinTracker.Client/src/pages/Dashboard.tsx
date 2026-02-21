@@ -1,7 +1,4 @@
 import * as React from "react";
-import type {Transaction} from "../types/Transaction.ts";
-import {useEffect} from "react";
-import axios from "axios";
 import AccountCard, {type AccountCardProps} from "../components/AccountCard.tsx";
 
 import { ArrowDownToLine, CalendarDays } from 'lucide-react';
@@ -13,17 +10,9 @@ import {useTransactions} from "../context/TransactionContext.tsx";
 
 export const Dashboard: React.FC = () => {
     const { allTransactions, stats, accounts, loading } = useTransactions()
-    const [recentTransactions, setRecentTransactions] = React.useState<Transaction[]>([]);
-    
     const currency = accounts?.[0]?.currency;
     
-    
-    useEffect(() => {
-        axios.get('http://localhost:5093/api/Transaction?limit=5')
-            .then(res => {
-                setRecentTransactions(res.data.items);
-            }).catch(err => console.log(err));
-    }, []);
+    const recentTransactions = allTransactions.filter(t => t.bookingDate).slice(0, 5);
     
     return (
             <div className="grid grid-cols-12 gap-3">
@@ -51,7 +40,7 @@ export const Dashboard: React.FC = () => {
                             page='dashboard' 
                             isLoading={loading}/>
                 </div>
-                <div className="col-span-8 row-span-2 col-start-1 overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
+                <div className="col-span-9 row-span-2 col-start-1 overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
                     <TransactionTable transactions={recentTransactions} pageType="dashboard" isLoading={loading}/>
                 </div>
             </div>

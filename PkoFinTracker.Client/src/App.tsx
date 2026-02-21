@@ -19,7 +19,7 @@ function App() {
 
                         <Layout>
                             <Routes>
-                                <Route path="/dashboard" element={<Dashboard />} />
+                                <Route path="/" element={<Dashboard />} />
                                 <Route path="/transactions" element={<Transactions />} />
                             </Routes>
                         </Layout>
