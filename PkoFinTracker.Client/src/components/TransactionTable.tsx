@@ -8,6 +8,8 @@ import "../datepicker-custom.css"
 import DatePicker from "react-datepicker";
 import {forwardRef, useState} from "react";
 
+import notFoundImg from "../assets/not-found.png"
+import Skeleton from "react-loading-skeleton";
 
 export interface TransactionProps {
     transactions: Transaction[];
@@ -16,6 +18,7 @@ export interface TransactionProps {
     totalPages?: number;
     totalCount?: number;
     onPageChange?: (page: number) => void;
+    isLoading?: boolean;
 }
 
 
@@ -36,8 +39,7 @@ const CalendarTrigger = forwardRef<HTMLButtonElement, CalendarTriggerProps>(
     )
 );
 
-
-const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, currentPage, totalPages, totalCount, onPageChange}) => {
+const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, currentPage, totalPages, totalCount, onPageChange, isLoading}) => {
     const {dateRange, description, categories, setDateRange, setDescription} = useTransactions();
     const [isOpen, setIsOpen] = React.useState(false);
     
@@ -79,9 +81,8 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                         </div>
                 </div>}
             </div>
-
-            <div className={`${pageType === 'transactions' ? 'h-168' : 'max-h-60'} overflow-x-auto`}>
-                <table className="w-full">
+            <div className={`${pageType === 'transactions' ? 'h-168' : 'h-60'} ${transactions.length === 0 && 'flex justify-center'} overflow-x-auto`}>
+                <table className="relative w-full">
                     <thead className="">
                     <tr className="border-b border-gray-800">
                         <th>№</th>
@@ -94,66 +95,79 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                     </tr>
                     </thead>
                     <tbody>
-                    {transactions.map((t, index) => (
-                        <tr
-                            key={t.id}
-                            className={`hover:bg-gray-800/50 transition ${
-                                index !== transactions.length - 1 ? 'border-b border-gray-800' : ''
-                            }`}
-                        >
-                            <td className="pl-5"> {pageType === "transactions" 
-                                ? (currentPage! - 1) * 10 + (index + 1)
-                                : (index + 1)
-                            }
-                            </td>
-                            <td>
-                                #{t.id.substring(0, 8)}...
-                            </td>
-                            <td className="">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-light"
-                                        style={{
-                                            backgroundColor: `hsl(${(index * 137) % 360}, 65%, 55%)`
-                                        }}
-                                    >
-                                        {t.description?.charAt(0).toUpperCase() || 'T'}
-                                    </div>
-                                    <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
-                                        {t.description}
-                                    </div>
-                                </div>
-                            </td>
-                            <td className="">
-                                <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
-                                    {t.categoryName}
-                                </div>
-                            </td>
-                            <td className="whitespace-nowrap">
-                                {new Date(t.bookingDate).toLocaleDateString('en-US', {
-                                    weekday: 'short',
-                                    day: 'numeric',
-                                    month: 'short',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}
-                            </td>
-                            <td className={`whitespace-nowrap ${t.indicator === "DBIT" ? 'text-red-600' : 'text-emerald-600'} pr-2`}>
-                                {t.indicator === 'DBIT' ? '-' : '+'}{t.amount} {t.currency}
-                            </td>
-                            {pageType === 'transactions' && <td>
-                                <EllipsisVertical className="cursor-pointer"/>
-                            </td>}
-                        </tr>
-                    ))}
+                    {isLoading ? (
+                        Array.from({ length: 10 }).map((_, i) => (
+                            <tr key={i}>
+                                <td colSpan={pageType === 'transactions' ? 7 : 6} className="py-2 px-4">
+                                    <Skeleton height={28} className="w-full rounded-lg" />
+                                </td>
+                            </tr>
+                        ))
+                    ) : transactions.length > 0 && (
+                        transactions.map((t, index) => (
+                                <tr
+                                    key={t.id}
+                                    className={`hover:bg-gray-800/50 transition ${
+                                        index !== transactions.length - 1 ? 'border-b border-gray-800' : ''
+                                    }`}
+                                >
+                                    <td className="pl-5"> {pageType === "transactions"
+                                        ? (currentPage! - 1) * 10 + (index + 1)
+                                        : (index + 1)
+                                    }
+                                    </td>
+                                    <td>
+                                        #{t.id.substring(0, 8)}...
+                                    </td>
+                                    <td className="">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-light"
+                                                style={{
+                                                    backgroundColor: `hsl(${(index * 137) % 360}, 65%, 55%)`
+                                                }}
+                                            >
+                                                {t.description?.charAt(0).toUpperCase() || 'T'}
+                                            </div>
+                                            <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
+                                                {t.description}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="">
+                                        <div className="w-30 overflow-x-auto whitespace-nowrap scrollbar-none">
+                                            {t.categoryName}
+                                        </div>
+                                    </td>
+                                    <td className="whitespace-nowrap">
+                                        {new Date(t.bookingDate).toLocaleDateString('en-US', {
+                                            weekday: 'short',
+                                            day: 'numeric',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </td>
+                                    <td className={`whitespace-nowrap ${t.indicator === "DBIT" ? 'text-red-600' : 'text-emerald-600'} pr-2`}>
+                                        {t.indicator === 'DBIT' ? '-' : '+'}{t.amount} {t.currency}
+                                    </td>
+                                    {pageType === 'transactions' && <td>
+                                        <EllipsisVertical className="cursor-pointer"/>
+                                    </td>}
+                                </tr>
+                            ))
+                    )}
+                    {!isLoading && transactions.length === 0 && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                            <p className={`${pageType === "transactions" ? "text-3xl" : "text-2xl"} text-gray-400`} >There are no transactions</p>
+                            <img src={notFoundImg} alt="empty state"
+                                 className={`${pageType === "transactions" ? "w-60 h-60" : "w-40 h-40"} bg-transparent object-contain opacity-70`} />
+                        </div>
+                    )}
                     </tbody>
                 </table>
             </div>
-            {transactions.length === 0 && (
-                <div className="py-12 text-center text-gray-400">
-                    <p>Немає транзакцій для відображення</p>
-                </div>
-            )}
+            
             {pageType === 'transactions' && 
                 <div className="flex items-center justify-between p-5">
                     <div className="flex items-center gap-3 opacity-60">
@@ -329,4 +343,5 @@ const FilterModal: React.FC<FilterModalProps> = ({categories, onClose}) => {
         </div>
     )
 }
+
 export default TransactionTable

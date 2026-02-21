@@ -4,10 +4,12 @@ import {Dashboard} from "./pages/Dashboard.tsx";
 import Layout from "./components/Layout.tsx";
 import Transactions from "./pages/Transactions.tsx";
 import {TransactionProvider} from "./context/TransactionContext.tsx";
+import {SkeletonTheme} from "react-loading-skeleton";
 
 
 function App() {
     return (
+        <SkeletonTheme baseColor="#252231" highlightColor="#312d41">
         <BrowserRouter>
             <TransactionProvider>
                 <Routes>
@@ -25,6 +27,7 @@ function App() {
                 </Routes>
             </TransactionProvider>
         </BrowserRouter>
+        </SkeletonTheme>
     )
 }
 

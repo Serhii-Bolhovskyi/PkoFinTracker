@@ -39,7 +39,7 @@ interface TransactionContext {
     stats: TransactionStats,
     filterStats: TransactionFilterStats,
     loading: boolean,
-
+ 
     goToPage: (page: number) => Promise<void>;
     
     dateRange: [Date | null, Date | null];
@@ -73,8 +73,13 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         totalPages: 0,
         currentPage: 1
     });
-    
-    const [dateRange, setDateRange] = React.useState<[Date | null, Date | null]>([null, null]);
+
+    const [dateRange, setDateRange] = React.useState<[Date | null, Date | null]>(() => {
+        const now = new Date();
+        const first = new Date(now.getFullYear(), now.getMonth(), 1);
+        const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return [first, last];
+    });
     const [description, setDescription] = React.useState<string | null>("");
     
     const [categories, setCategories] = React.useState<Category[]>([]);
@@ -83,12 +88,11 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const [indicator, setIndicator] = React.useState<string | null>("");
     
     const [amountRange, setAmountRange] = React.useState<[number | null, number | null]>([null, null])
-
-    const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
-    const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
     
     const getFilterParams = () => {
         const [minAmount, maxAmount] = amountRange || [null, null]
+        const from = dateRange[0] ? `from=${dateRange[0]?.toLocaleDateString("en-US")}` : "";
+        const to = dateRange[1] ? `&to=${dateRange[1]?.toLocaleDateString("en-US")}` : "";
         
         const descSearch = description! && `&description=${description}`;
         const categoryParams = selectedCategoryIds && selectedCategoryIds.length > 0
@@ -98,12 +102,15 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         const minParam = (minAmount !== null && minAmount > 0) ? `&minAmount=${minAmount}` : "";
         const maxParam = (maxAmount !== null && maxAmount > 0) ? `&maxAmount=${maxAmount}` : "";
         
-        return `${descSearch}${categoryParams}${indicatorParams}${minParam}${maxParam}`
+        return `${from}${to}${descSearch}${categoryParams}${indicatorParams}${minParam}${maxParam}`
     } 
     
     const loadInitialData = async () => {
         setLoading(true)
         try{
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
             const [transRes, accRes, catRes] = await Promise.all([
                 axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`),
                 axios.get('http://localhost:5093/api/Account'),
@@ -123,14 +130,12 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         try{
             setLoading(true)
             
-            let date = new Date();
-            let firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toLocaleDateString("en-US");
-            let lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).toLocaleDateString("en-US");
-            
             const filterParams = getFilterParams();
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
             
             const res = await axios.get(
-                `http://localhost:5093/api/Transaction?from=${firstDay}&to=${lastDay}${filterParams}&pageNumber=1&pageSize=10`);
+                `http://localhost:5093/api/Transaction?${filterParams}&pageNumber=1&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -148,7 +153,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             const filterParams = getFilterParams();
             
             const res = await axios.get(
-                `http://localhost:5093/api/Transaction/?${from}${to}${filterParams}&pageNumber=${pageNumber}&pageSize=10`);
+                `http://localhost:5093/api/Transaction/?${filterParams}&pageNumber=${pageNumber}&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -162,18 +167,15 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     }
     
     const fetchFilteredTransactions = async () => {
-        let date = new Date();
-        let firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toLocaleDateString("en-US");
-        let lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).toLocaleDateString("en-US");
-
         const filterParams = getFilterParams();
+
+        await new Promise(resolve => setTimeout(resolve, 3000));
     
         const res = await axios.get(
-            `http://localhost:5093/api/Transaction/?from=${firstDay}&to=${lastDay}${filterParams}&pageSize=1000`);
+            `http://localhost:5093/api/Transaction/?${filterParams}&pageSize=1000`);
 
         setFilteredTransactions(res.data.items);
     }
-    
 
     useEffect(() => {
         loadInitialData();
