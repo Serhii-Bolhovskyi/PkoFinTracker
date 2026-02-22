@@ -6,19 +6,24 @@ import Cashflow from "../components/Cashflow.tsx";
 import TransactionTable from "../components/TransactionTable.tsx";
 import StatCard from "../components/StatCard.tsx";
 import {useTransactions} from "../context/TransactionContext.tsx";
+import {useMemo} from "react";
 
 
 export const Dashboard: React.FC = () => {
-    const { allTransactions, stats, accounts, loading } = useTransactions()
+    const { allTransactions, stats, accounts, initialLoading } = useTransactions()
     const currency = accounts?.[0]?.currency;
-    
-    const recentTransactions = allTransactions.filter(t => t.bookingDate).slice(0, 5);
+
+    const recentTransactions = useMemo(() => {
+        return allTransactions.filter(t => t.bookingDate).slice(0, 5);
+    }, [allTransactions]);
+
+    console.log("render")
     
     return (
             <div className="grid grid-cols-12 gap-3">
                 <Greetings accounts={accounts}/>
                 <AccountCard accounts={accounts} />
-                <Cashflow transactions={allTransactions} isLoading={loading} pageType="dashboard"/>
+                <Cashflow transactions={allTransactions} isLoading={initialLoading} pageType="dashboard"/>
                <div className="col-start-1 col-span-2 ">
                         <StatCard 
                             title="Total Income" 
@@ -27,7 +32,7 @@ export const Dashboard: React.FC = () => {
                             currency={currency} 
                             type='income' 
                             page='dashboard'
-                            isLoading={loading}
+                            isLoading={initialLoading}
                         />
                </div>
                 <div className="col-start-3 col-span-2">
@@ -38,10 +43,10 @@ export const Dashboard: React.FC = () => {
                             currency={currency} 
                             type='expense' 
                             page='dashboard' 
-                            isLoading={loading}/>
+                            isLoading={initialLoading}/>
                 </div>
                 <div className="col-span-9 row-span-2 col-start-1 overflow-x-auto rounded-xl border border-gray-800 bg-bank-comp text-white">
-                    <TransactionTable transactions={recentTransactions} pageType="dashboard" isLoading={loading}/>
+                    <TransactionTable transactions={recentTransactions} pageType="dashboard" isLoading={initialLoading}/>
                 </div>
             </div>
     )

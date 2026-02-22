@@ -18,7 +18,7 @@ const COLORS = [
 ];
 
 const Transactions: React.FC = () => {
-    const {paginatedData, filteredTransactions, goToPage, filterStats, accounts, loading} = useTransactions();
+    const {paginatedData, filteredTransactions, goToPage, filterStats, accounts, paginatedLoading} = useTransactions();
 
     const currency = accounts?.[0]?.currency;
     
@@ -51,7 +51,7 @@ const Transactions: React.FC = () => {
                             type='info'
                             page='transaction'
                             icon={<WalletCards className="w-6 h-6"/>}
-                            isLoading={loading}
+                            isLoading={paginatedLoading}
                         />
                     </div>
                     <div className="col-span-3">
@@ -62,7 +62,7 @@ const Transactions: React.FC = () => {
                             type='income'
                             page='transaction'
                             icon={<BanknoteArrowDown className="w-6 h-6"/>}
-                            isLoading={loading}
+                            isLoading={paginatedLoading}
                         />
                     </div>
                     <div className="col-span-3">
@@ -73,26 +73,26 @@ const Transactions: React.FC = () => {
                             type='expense'
                             page='transaction'
                             icon={<BanknoteArrowUp className="w-6 h-6"/>}
-                            isLoading={loading}
+                            isLoading={paginatedLoading}
                         />
                     </div>
                     <div className="col-span-3 row-span-9 bg-bank-comp p-7 rounded-2xl flex flex-col">
                         <div className="text-center mb-4">
                             <p className="text-white text-xl">
-                                {loading ? <Skeleton width={180} /> : "Top Spending Categories"}
+                                {paginatedLoading ? <Skeleton width={180} /> : "Top Spending Categories"}
                             </p>
                         </div>
                         
-                        <div className="h-60 w-full flex items-center justify-center my-4">
-                            {loading ? (
+                        <div className="h-60 w-full flex items-center justify-center">
+                            {paginatedLoading ? (
                                 <Skeleton circle width={180} height={180} />
                             ) : (
                                 <PieChartWithPaddingAngle data={pieData} />
                             )}
                         </div>
                         
-                        <div className="flex h-20 flex-wrap items-center justify-center gap-2  mt-4">
-                            {loading ? (
+                        <div className="flex h-32 overflow-y-auto flex-wrap items-center justify-center gap-2  mt-4">
+                            {paginatedLoading ? (
                                 Array.from({ length: 6 }).map((_, i) => (
                                     <div key={i} className="flex items-center gap-2">
                                         <Skeleton circle width={12} height={10} />
@@ -121,7 +121,7 @@ const Transactions: React.FC = () => {
                     currentPage={paginatedData.currentPage}
                     totalPages={paginatedData.totalPages}
                     onPageChange={(page) => goToPage(page)}
-                    isLoading={loading}
+                    isLoading={paginatedLoading}
                 />
             </div>
         </div>

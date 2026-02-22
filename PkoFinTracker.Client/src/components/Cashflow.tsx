@@ -78,7 +78,7 @@ const MixBarChart: React.FC<{ data: any }> = ({ data }) => {
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2D2B3F" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                    <YAxis axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} domain={[0, 'auto']} />
                     <Tooltip formatter={(value) => <span className="flex flex-col text-gray-400 text-base text-left">€{Number(value).toFixed(1)}</span>} 
                     />
                     <Legend

@@ -40,8 +40,9 @@ interface TransactionContext {
     
     stats: TransactionStats,
     filterStats: TransactionFilterStats,
-    
-    loading: boolean,
+
+    initialLoading: boolean,
+    paginatedLoading: boolean,
  
     goToPage: (page: number) => Promise<void>;
     
@@ -67,18 +68,15 @@ interface TransactionContext {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5093';
 
-console.log("VITE_API_URL from ENV:", import.meta.env.VITE_API_URL);
-
 const TransactionContext = createContext<TransactionContext | null>(null);
 
 export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
     const [allTransactions, setAllTransactions] = React.useState<Transaction[]>([]);
     const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
     const [accounts, setAccounts] = React.useState<BankAccount[]>([]);
-    const [loading, setLoading] = useState(true)
-
-    console.log("Current API URL:", API_BASE_URL);
-
+    const [initialLoading, setInitialLoading] = React.useState(true);
+    const [paginatedLoading, setPaginatedLoading] = React.useState(true);
+    
     const [paginatedData, setPaginatedData] = useState<PaginatedData>({
         items: [],
         totalCount: 0,
@@ -122,7 +120,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     } 
     
     const loadInitialData = async () => {
-        setLoading(true)
+        setInitialLoading(true)
         try{
             
             const [transRes, accRes, catRes] = await Promise.all([
@@ -136,13 +134,13 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             setCategories(catRes.data);
 
         } finally {
-            setLoading(false);
+            setInitialLoading(false);
         }
     }
     
     const loadPaginatedData = async() => {
+        setPaginatedLoading(true)
         try{
-            setLoading(true)
             const filterParams = getFilterParams();
             
             const res = await axios.get(
@@ -154,12 +152,12 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
                 currentPage: res.data.pageNumber
             });
         }finally {
-            setLoading(false);
+            setPaginatedLoading(false);
         }
     }
     
     const goToPage = async (pageNumber: number) => {
-        setLoading(true)
+        setPaginatedLoading(true)
         try {
             const filterParams = getFilterParams();
             
@@ -173,7 +171,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             });
         }
         finally {
-            setLoading(false);
+            setPaginatedLoading(false);
         }
     }
     
@@ -188,14 +186,13 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
 
     useEffect(() => {
         loadInitialData();
-        loadPaginatedData()
     }, []);
 
     useEffect(() => {
         const handler = setTimeout(() => {
             loadPaginatedData();
             fetchFilteredTransactions();
-        }, 1000)
+        }, 500)
         return () => clearTimeout(handler);
     }, [dateRange, description, selectedCategoryIds, indicator, amountRange, status]);
     
@@ -251,8 +248,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         return {
             totalIncome: result.currInc,
             totalExpense: result.currExp,
-            incomeDiff: calcDiff(result.currInc, result.prevInc),
-            expenseDiff: calcDiff(result.currExp, result.prevExp),
+            incomeDiff: Math.abs(calcDiff(result.currInc, result.prevInc)),
+            expenseDiff: Math.abs(calcDiff(result.currExp, result.prevExp)),
             totalCount: result.currCount,
             countDiff: countDiff
         }
@@ -282,7 +279,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             paginatedData,
             accounts,
             stats,
-            loading,
+            initialLoading,
+            paginatedLoading,
             dateRange,
             description,
             categories,

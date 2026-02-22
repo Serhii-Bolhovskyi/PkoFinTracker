@@ -82,8 +82,8 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                         </div>
                 </div>}
             </div>
-            <div className={`${pageType === 'transactions' ? 'h-176' : 'h-60'} ${transactions.length === 0 && 'flex justify-center'} overflow-x-auto`}>
-                <table className="relative w-full">
+            <div className={`${pageType === 'transactions' ? 'h-176' : 'h-60'} ${transactions.length === 0 && 'flex justify-center'} overflow-x-auto table-scrollbar`}>
+                <table className="relative w-full ">
                     <thead className="">
                     <tr className="border-b border-gray-800">
                         <th>№</th>
@@ -96,7 +96,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                         {pageType === 'transactions' && <th></th>}
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="table-scrollbar ">
                     {isLoading ? (
                         Array.from({ length: 10 }).map((_, i) => (
                             <tr key={i}>

@@ -82,7 +82,7 @@ const StatCard: React.FC<StatCardProps> = ({title, amount, qty, diff, currency, 
                                 <span>{isPositive ? <TrendingUp className='w-6 h-6'/> : <TrendingDown className='w-6 h-6'/>} </span>
                                 <CountUp
                                     end={diff ?? 0}
-                                    duration={1}
+                                    duration={1.5}
                                     separator=","
                                     decimals={1}
                                     suffix="%"
