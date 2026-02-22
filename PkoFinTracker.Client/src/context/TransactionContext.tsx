@@ -65,7 +65,9 @@ interface TransactionContext {
     setStatus: (status: string | null) => void;
 }
 
-const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://localhost:5093';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5093';
+
+console.log("VITE_API_URL from ENV:", import.meta.env.VITE_API_URL);
 
 const TransactionContext = createContext<TransactionContext | null>(null);
 
@@ -74,6 +76,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
     const [accounts, setAccounts] = React.useState<BankAccount[]>([]);
     const [loading, setLoading] = useState(true)
+
+    console.log("Current API URL:", API_BASE_URL);
 
     const [paginatedData, setPaginatedData] = useState<PaginatedData>({
         items: [],
