@@ -65,6 +65,8 @@ interface TransactionContext {
     setStatus: (status: string | null) => void;
 }
 
+const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://localhost:5093';
+
 const TransactionContext = createContext<TransactionContext | null>(null);
 
 export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
@@ -120,9 +122,9 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         try{
             
             const [transRes, accRes, catRes] = await Promise.all([
-                axios.get(`http://localhost:5093/api/Transaction?pageSize=1000`),
-                axios.get('http://localhost:5093/api/Account'),
-                axios.get('http://localhost:5093/api/Transaction/categories')
+                axios.get(`${API_BASE_URL}/api/Transaction?pageSize=1000`),
+                axios.get('${API_BASE_URL}/api/Account'),
+                axios.get('${API_BASE_URL}/api/Transaction/categories')
             ])
             
             setAllTransactions(transRes.data.items);
@@ -140,7 +142,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             const filterParams = getFilterParams();
             
             const res = await axios.get(
-                `http://localhost:5093/api/Transaction?${filterParams}&pageNumber=1&pageSize=10`);
+                `${API_BASE_URL}/api/Transaction?${filterParams}&pageNumber=1&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -158,7 +160,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             const filterParams = getFilterParams();
             
             const res = await axios.get(
-                `http://localhost:5093/api/Transaction/?${filterParams}&pageNumber=${pageNumber}&pageSize=10`);
+                `${API_BASE_URL}/api/Transaction/?${filterParams}&pageNumber=${pageNumber}&pageSize=10`);
             setPaginatedData({
                 items: res.data.items,
                 totalCount: res.data.totalCount,
@@ -175,7 +177,7 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
         const filterParams = getFilterParams();
         
         const res = await axios.get(
-            `http://localhost:5093/api/Transaction/?${filterParams}&pageSize=1000`);
+            `${API_BASE_URL}/api/Transaction/?${filterParams}&pageSize=1000`);
 
         setFilteredTransactions(res.data.items);
     }
