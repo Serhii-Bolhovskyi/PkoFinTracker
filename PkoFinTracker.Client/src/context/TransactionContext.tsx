@@ -123,8 +123,8 @@ export const TransactionProvider: React.FC<{children: React.ReactNode}> = ({ chi
             
             const [transRes, accRes, catRes] = await Promise.all([
                 axios.get(`${API_BASE_URL}/api/Transaction?pageSize=1000`),
-                axios.get('${API_BASE_URL}/api/Account'),
-                axios.get('${API_BASE_URL}/api/Transaction/categories')
+                axios.get(`${API_BASE_URL}/api/Account`),
+                axios.get(`${API_BASE_URL}/api/Transaction/categories`)
             ])
             
             setAllTransactions(transRes.data.items);
