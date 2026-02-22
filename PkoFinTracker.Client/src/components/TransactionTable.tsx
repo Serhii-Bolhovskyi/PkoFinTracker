@@ -82,7 +82,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
                         </div>
                 </div>}
             </div>
-            <div className={`${pageType === 'transactions' ? 'h-168' : 'h-60'} ${transactions.length === 0 && 'flex justify-center'} overflow-x-auto`}>
+            <div className={`${pageType === 'transactions' ? 'h-176' : 'h-60'} ${transactions.length === 0 && 'flex justify-center'} overflow-x-auto`}>
                 <table className="relative w-full">
                     <thead className="">
                     <tr className="border-b border-gray-800">
@@ -189,7 +189,7 @@ const TransactionTable:React.FC<TransactionProps> = ({transactions, pageType, cu
             </div>
             
             {pageType === 'transactions' && 
-                <div className="flex items-center justify-between p-5">
+                <div className="flex items-center justify-between p-5 border-t border-gray-800">
                     <div className="flex items-center gap-3 opacity-60">
                         <span>{from} - {to}</span>
                         of
