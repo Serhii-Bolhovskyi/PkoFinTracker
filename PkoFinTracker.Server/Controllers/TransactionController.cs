@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PkoFinTracker.Server.Models;
 using PkoFinTracker.Server.Service;
 
 namespace PkoFinTracker.Server.Controllers;
@@ -14,26 +15,9 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTransactions(
-        [FromQuery] int? limit, 
-        [FromQuery] int? pageNumber, [FromQuery] int? pageSize,
-        [FromQuery]  DateTime? from, [FromQuery] DateTime? to,
-        [FromQuery]  string? description,
-        [FromQuery]  List<int>? categoryIds,
-        [FromQuery]  string? indicator,
-        [FromQuery]  decimal? minAmount,
-        [FromQuery]  decimal? maxAmount,
-        [FromQuery] string? status)
+    public async Task<IActionResult> GetTransactions([FromQuery] TransactionQuery request)
     {
-        var res = await _transactionService.GetAllTransactionAsync(
-            limit,
-            pageNumber, pageSize,
-            from, to,
-            description,
-            categoryIds, 
-            indicator,
-            minAmount, maxAmount,
-            status);
+        var res = await _transactionService.GetAllTransactionAsync(request);
         return Ok(res);
     }
 

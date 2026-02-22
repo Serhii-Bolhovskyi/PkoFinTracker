@@ -87,72 +87,27 @@ public class TransactionService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<TransactionPaginatedDto> GetAllTransactionAsync(
-        int? limit = null, 
-        int? pageNumber = null, int? pageSize = null, 
-        DateTime? from = null,  DateTime? to = null,
-        string? description = null,
-        List<int>? categoryIds = null,
-        string? indicator = null,
-        decimal? minAmount = null,
-        decimal? maxAmount = null,
-        string? status = null
-        )
+    public async Task<TransactionPaginatedDto> GetAllTransactionAsync(TransactionQuery request)
     {
         var query = _context.Transactions
             .OrderByDescending(t => t.BookingDate)
             .AsQueryable();
 
-        if (from.HasValue)
-        {
-            from = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
-            query = query.Where(t => t.BookingDate >= from.Value.Date);
-        }
-
-        if (to.HasValue)
-        {
-            to = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
-            query = query.Where(t => t.BookingDate <= to.Value.Date);
-        }
-        
-        if (description != null)
-        {
-            query = query.Where(t => t.Description.ToLower().Contains(description.ToLower()));
-        }
-
-        if (categoryIds != null && categoryIds.Any())
-        {
-            query = query.Where(t => categoryIds.Contains(t.CategoryId ?? 0));
-        }
-
-        if (!string.IsNullOrEmpty(indicator))
-        {
-            query = query.Where(t => t.Indicator.ToLower().Contains(indicator.ToLower()));
-        }
-        
-        if(minAmount.HasValue)
-            query = query.Where(t => t.Amount >= minAmount.Value);
-        if(maxAmount.HasValue)
-            query = query.Where(t => t.Amount <= maxAmount.Value);
-        
-        if (!string.IsNullOrEmpty(status))
-        {
-            query = query.Where(t => t.Status.ToLower().Contains(status.ToLower()));
-        }
+        query = query
+            .FilterByDate(request.From, request.To)
+            .FilterByDescription(request.Description)
+            .FilterByCategoryIds(request.CategoryIds)
+            .FilterByIndicator(request.Indicator)
+            .FilterByAmount(request.MinAmount, request.MaxAmount)
+            .FilterByStatus(request.Status);
         
         var totalCount = await query.CountAsync(); 
 
-        int page = pageNumber ?? 1;
-        int size = pageSize ?? 10;
+        int page = request.PageNumber ?? 1;
+        int size = request.PageSize ?? 10;
         
-        if (limit.HasValue)
-        {
-            query = query.Take(limit.Value);
-        }
-        else
-        {
-            query = query.Skip((page - 1) * size).Take(size);
-        }
+      
+        query = query.Skip((page - 1) * size).Take(size);
         
         var items =  await query
             .Select(t => new TransactionDisplayDto
