@@ -5,12 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace PkoFinTracker.Server.Service;
 
-public class EnableBankingAuthService
+public class EnableBankingJwtGenerator
 {
     private readonly string _applicationId; // id
     private readonly string _keyPath; // pem
     
-    public EnableBankingAuthService(IConfiguration conf, IWebHostEnvironment env)
+    public EnableBankingJwtGenerator(IConfiguration conf, IWebHostEnvironment env)
     {
         _applicationId = conf.GetValue<string>("EnableBanking:ApplicationId");
         var keyFileName = conf.GetValue<string>("EnableBanking:KeyPath");

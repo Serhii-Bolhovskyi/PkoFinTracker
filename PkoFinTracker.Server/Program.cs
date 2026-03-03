@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<TransactionContext>(opt => opt.UseNpgsql(connectionString));
 
-builder.Services.AddScoped<EnableBankingAuthService>();
+builder.Services.AddScoped<EnableBankingJwtGenerator>();
 builder.Services.AddHttpClient<EnableBankingService>();
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<AccountService>();

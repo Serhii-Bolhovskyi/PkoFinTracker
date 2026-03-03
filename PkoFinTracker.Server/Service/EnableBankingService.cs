@@ -6,19 +6,19 @@ namespace PkoFinTracker.Server.Service;
 public class EnableBankingService
 {
     private readonly HttpClient _httpClient;
-    private readonly EnableBankingAuthService _enableBankingAuthService;
+    private readonly EnableBankingJwtGenerator _enableBankingJwtGenerator;
     private readonly IConfiguration _conf;
 
-    public EnableBankingService(HttpClient httpClient, EnableBankingAuthService enableBankingAuthService,  IConfiguration conf)
+    public EnableBankingService(HttpClient httpClient, EnableBankingJwtGenerator enableBankingJwtGenerator,  IConfiguration conf)
     {
         _httpClient = httpClient;
-        _enableBankingAuthService = enableBankingAuthService; 
+        _enableBankingJwtGenerator = enableBankingJwtGenerator; 
         _conf = conf;
     }
 
     private async Task<HttpRequestMessage> CreateRequestAsync(HttpMethod method, string url, string? sessionId = null)
     {
-        var token = _enableBankingAuthService.GenerateJwtToken();
+        var token = _enableBankingJwtGenerator.GenerateJwtToken();
         var request = new HttpRequestMessage(method, url);
         
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
