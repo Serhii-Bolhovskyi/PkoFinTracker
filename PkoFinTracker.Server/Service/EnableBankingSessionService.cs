@@ -6,20 +6,20 @@ namespace PkoFinTracker.Server.Service;
 public class EnableBankingSessionService
 {
     private readonly HttpClient _http;
-    private readonly IAuthStrategy _auth;
+    private readonly EnableBankingAuthStrategy _auth;
     private readonly IConfiguration _conf;
     
-    public EnableBankingSessionService(HttpClient http, IAuthStrategy auth, IConfiguration conf)
+    public EnableBankingSessionService(HttpClient http, EnableBankingAuthStrategy auth, IConfiguration conf)
     {
         _http = http;
         _auth = auth;
         _conf = conf;
     }
 
-    public async Task<HttpRequestMessage> BuildRequestAsync(HttpMethod method, string url, AuthContext? context = null)
+    public async Task<HttpRequestMessage> BuildRequestAsync(HttpMethod method, string url, string? sessionId = null)
     {
         var request = new HttpRequestMessage(method, url);
-        await _auth.ApplyAuthAsync(request, context);
+        await _auth.ApplyAuthAsync(request, sessionId);
         
         return request;
     }

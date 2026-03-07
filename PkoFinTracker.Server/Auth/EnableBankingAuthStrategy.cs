@@ -9,14 +9,14 @@ public class EnableBankingAuthStrategy : IAuthStrategy
     
     public EnableBankingAuthStrategy(EnableBankingJwtGenerator jwtGenerator) => _jwtGenerator = jwtGenerator;
 
-    public Task ApplyAuthAsync(HttpRequestMessage request, AuthContext? context = null)
+    public Task ApplyAuthAsync(HttpRequestMessage request,  string? sessionId = null)
     {
         var token = _jwtGenerator.GenerateJwtToken();
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        if (context?.SessionId != null)
+        if (sessionId != null)
         {
-            request.Headers.Add("X-Session-Id", context.SessionId);
+            request.Headers.Add("X-Session-Id", sessionId);
         }
         
         return Task.CompletedTask;

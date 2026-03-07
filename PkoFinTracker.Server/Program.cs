@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using PkoFinTracker.Server.Auth;
 using PkoFinTracker.Server.Data;
+using PkoFinTracker.Server.DTOs;
+using PkoFinTracker.Server.DTOs.MonoBankDTOs;
+using PkoFinTracker.Server.Providers;
 using PkoFinTracker.Server.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,8 +11,20 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<TransactionContext>(opt => opt.UseNpgsql(connectionString));
 
+// EnableBanking
+builder.Services.AddScoped<EnableBankingAuthStrategy>();
 builder.Services.AddScoped<EnableBankingJwtGenerator>();
+builder.Services.AddScoped<EnableBankingSessionService>();
+builder.Services.AddScoped<IBankProvider<AccountDetailsResponseDto>, EnableBankingProvider>();
+builder.Services.AddHttpClient<EnableBankingProvider>();
+
 builder.Services.AddHttpClient<EnableBankingService>();
+
+// MonoBank
+builder.Services.AddScoped<MonoBankAuthStrategy>();
+builder.Services.AddScoped<IBankProvider<MonoBankClientInfoDto>, MonoBankProvider>();
+builder.Services.AddHttpClient<MonoBankProvider>();
+
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<AccountService>();
 
