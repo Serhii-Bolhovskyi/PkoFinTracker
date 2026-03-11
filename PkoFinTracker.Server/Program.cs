@@ -15,14 +15,14 @@ builder.Services.AddDbContext<TransactionContext>(opt => opt.UseNpgsql(connectio
 builder.Services.AddScoped<EnableBankingAuthStrategy>();
 builder.Services.AddScoped<EnableBankingJwtGenerator>();
 builder.Services.AddScoped<EnableBankingSessionService>();
-builder.Services.AddScoped<IBankProvider<AccountDetailsResponseDto>, EnableBankingProvider>();
+builder.Services.AddScoped<IBankProvider<AccountDetailsResponseDto, TransactionsResponseDto>, EnableBankingProvider>();
 builder.Services.AddHttpClient<EnableBankingProvider>();
 
 builder.Services.AddHttpClient<EnableBankingService>();
 
 // MonoBank
 builder.Services.AddScoped<MonoBankAuthStrategy>();
-builder.Services.AddScoped<IBankProvider<MonoBankClientInfoDto>, MonoBankProvider>();
+builder.Services.AddScoped<IBankProvider<MonoBankClientInfoDto, MonoBankTransactionResponseDto>, MonoBankProvider>();
 builder.Services.AddHttpClient<MonoBankProvider>();
 
 builder.Services.AddScoped<TransactionService>();

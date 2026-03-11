@@ -2,7 +2,8 @@ using PkoFinTracker.Server.Models;
 
 namespace PkoFinTracker.Server.Providers;
 
-public interface IBankProvider<TResponse>
+public interface IBankProvider<AccountResponse, TransactionResponse>
 {
-    Task<TResponse?> GetClientInfoAsync(AccountRequest requestParams);
+    Task<AccountResponse?> GetClientInfoAsync(AccountRequest requestParams);
+    Task<TransactionResponse?> GetTransactionAsync(AccountRequest requestParams, TransactionRequest request);
 }

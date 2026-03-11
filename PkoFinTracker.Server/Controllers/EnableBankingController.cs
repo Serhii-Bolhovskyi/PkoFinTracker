@@ -11,11 +11,11 @@ namespace PkoFinTracker.Server.Controllers;
 public class EnableBankingController : ControllerBase
 {
     private readonly EnableBankingSessionService _sessionService;
-    private readonly IBankProvider<AccountDetailsResponseDto> _provider;
+    private readonly IBankProvider<AccountDetailsResponseDto, TransactionsResponseDto> _provider;
     private readonly TransactionService _transactionService;
     private readonly AccountService _accountService;
 
-    public EnableBankingController(EnableBankingSessionService sessionService, IBankProvider<AccountDetailsResponseDto> provider,TransactionService transactionService, AccountService accountService)
+    public EnableBankingController(EnableBankingSessionService sessionService, IBankProvider<AccountDetailsResponseDto, TransactionsResponseDto> provider,TransactionService transactionService, AccountService accountService)
     {
         _sessionService = sessionService;
         _provider = provider;
@@ -44,18 +44,18 @@ public class EnableBankingController : ControllerBase
     //     return Ok(res);
     // }
 
-    // [HttpGet("accounts/{accountId}/transactions")]
-    // public async Task<IActionResult> GetTransactions(string accountId, [FromQuery] string sessionId)
-    // {
-    //     var res = await _enableBankingService.GetTransactionsAsync(accountId, sessionId);
-    //
-    //     if (res?.Transactions != null && res.Transactions.Any())
-    //     {
-    //         await _transactionService.SyncTransactionsAsync(res.Transactions, accountId);
-    //     }
-    //     
-    //     return Ok(res);
-    // }
+    [HttpGet("accounts/{accountId}/transactions")]
+    public async Task<IActionResult> GetTransactions([FromQuery] AccountRequest aRequest, [FromQuery] TransactionRequest tRequest)
+    {
+        var res = await _provider.GetTransactionAsync(aRequest, tRequest);
+    
+        // if (res?.Transactions != null && res.Transactions.Any())
+        // {
+        //     await _transactionService.SyncTransactionsAsync(res.Transactions, accountId);
+        // }
+        
+        return Ok(res);
+    }
     
     [HttpPost("auth")]
     public async Task<IActionResult> Authenticate([FromBody] AuthRequestDto? request = null)
