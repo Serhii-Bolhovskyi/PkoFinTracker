@@ -30,7 +30,7 @@ public class EnableBankingController : ControllerBase
         return Ok(res);
     }
     
-    [HttpGet("accounts/{accountId}/details")]
+    [HttpGet("accounts/details")]
     public async Task<IActionResult> GetClientInfoAsync([FromQuery] AccountRequest request)
     {
         var res = await _provider.GetClientInfoAsync(request);
@@ -44,7 +44,7 @@ public class EnableBankingController : ControllerBase
     //     return Ok(res);
     // }
 
-    [HttpGet("accounts/{accountId}/transactions")]
+    [HttpGet("accounts/transactions")]
     public async Task<IActionResult> GetTransactions([FromQuery] AccountRequest aRequest, [FromQuery] TransactionRequest tRequest)
     {
         var res = await _provider.GetTransactionAsync(aRequest, tRequest);

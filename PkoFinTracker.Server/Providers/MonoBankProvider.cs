@@ -8,9 +8,11 @@ public class MonoBankProvider : BaseBankingProvider, IBankProvider<MonoBankClien
 {
     public MonoBankProvider(HttpClient httpClient, MonoBankAuthStrategy auth) : base(httpClient, auth){}
 
+    // receive personal bank's data 
     public async Task<MonoBankClientInfoDto?> GetClientInfoAsync(AccountRequest requestParams)
         => await GetAsync<MonoBankClientInfoDto>("https://api.monobank.ua/personal/client-info");
 
+    // receive transaction within concrete dates
     public async Task<MonoBankTransactionResponseDto?> GetTransactionAsync(AccountRequest accReq,
         TransactionRequest trReq)
     {

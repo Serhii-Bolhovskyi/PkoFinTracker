@@ -4,6 +4,7 @@ namespace PkoFinTracker.Server.Providers;
 
 public abstract class BaseBankingProvider
 {
+    // send req and receive res from resourse
     protected readonly HttpClient _httpClient;
     protected readonly IAuthStrategy _authStrategy;
 
