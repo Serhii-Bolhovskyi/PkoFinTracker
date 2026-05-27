@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PkoFinTracker.Server.Data;
 using PkoFinTracker.Server.DTOs;
 using PkoFinTracker.Server.Service;
 
@@ -11,12 +13,14 @@ public class BankController : ControllerBase
     private readonly EnableBankingService _enableBankingService;
     private readonly TransactionService _transactionService;
     private readonly AccountService _accountService;
+    private readonly TransactionContext _context;
 
-    public BankController(EnableBankingService enableBankingService, TransactionService transactionService, AccountService accountService)
+    public BankController(EnableBankingService enableBankingService, TransactionService transactionService, AccountService accountService, TransactionContext context)
     {
         _enableBankingService = enableBankingService;
         _transactionService = transactionService;
         _accountService = accountService;
+        _context = context;
     }
     
     [HttpGet]
@@ -29,7 +33,7 @@ public class BankController : ControllerBase
     [HttpGet("accounts/{accountId}/details")]
     public async Task<IActionResult> GetAccountDetails(string accountId, [FromQuery] string sessionId)
     {
-        var res = await _enableBankingService.GetBalancesAsync(accountId, sessionId);
+        var res = await _enableBankingService.GetAccountDetailsAsync(accountId, sessionId);
         return Ok(res);
     }
     
@@ -40,14 +44,17 @@ public class BankController : ControllerBase
         return Ok(res);
     }
 
-    [HttpGet("accounts/{accountId}/transactions")]
-    public async Task<IActionResult> GetTransactions(string accountId, [FromQuery] string sessionId)
+    [HttpGet("accounts/{iban}/transactions")]
+    public async Task<IActionResult> GetTransactions(string iban, [FromQuery] string sessionId)
     {
-        var res = await _enableBankingService.GetTransactionsAsync(accountId, sessionId);
+        var account = await _context.BankAccounts.FirstOrDefaultAsync(a => a.Iban == iban);
+        if(account == null) return NotFound("Account not found");
+        
+        var res = await _enableBankingService.GetTransactionsAsync(account.BankUid, sessionId);
 
         if (res?.Transactions != null && res.Transactions.Any())
         {
-            await _transactionService.SyncTransactionsAsync(res.Transactions, accountId);
+            await _transactionService.SyncTransactionsAsync(res.Transactions, iban);
         }
         
         return Ok(res);

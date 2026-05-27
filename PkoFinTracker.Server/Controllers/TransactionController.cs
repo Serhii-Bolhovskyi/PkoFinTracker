@@ -22,7 +22,7 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet("categories")]
-    public async Task<IActionResult> GetTransaction()
+    public async Task<IActionResult> GetCategories()
     {
         var res = await _transactionService.GetCategoriesAsync();
         return Ok(res);
